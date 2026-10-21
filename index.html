@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="CySA+ CS0-004" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#0b3d91" />
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjM2IiBmaWxsPSIjMGIzZDkxIi8+PHRleHQgeD0iOTAiIHk9IjExMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwtYXBwbGUtc3lzdGVtLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNzIiIGZvbnQtd2VpZ2h0PSI4MDAiIGZpbGw9IiNmZmYiPkMrPC90ZXh0Pjwvc3ZnPg==" />
 <title>CySA+ CS0-004 Practice Exam — Offline</title>
 <style>
 :root{
@@ -119,17 +125,190 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;paddi
 .explainer .optlist li.bad{border-color:rgba(176,0,32,.35)}
 .explainer .optlist .oe{display:block;margin-top:4px;color:var(--muted);font-size:12px}
 
+
+/* ---- Mobile / iPhone layout (<=768px) ---- */
+html{overflow-x:hidden}
+body{overflow-x:hidden;-webkit-text-size-adjust:100%}
+input,select,textarea{font-size:16px} /* prevent iOS zoom */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+.logbox{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.logline{white-space:pre;word-break:normal}
+.logline > span:last-child{min-width:0}
+.opt span{overflow-wrap:anywhere;word-break:break-word}
+.stem{overflow-wrap:anywhere}
+.qcard{min-width:0;max-width:100%;overflow-x:hidden}
+.exam-shell{min-width:0}
+.nav-toggle{display:none}
+.nav-backdrop{display:none}
+.bottombar{display:none}
+.topbar .title-full{display:inline}
+.topbar .title-short{display:none}
+.topbar-menu{display:none;position:relative}
+.topbar-menu .menu-panel{
+  display:none;position:absolute;right:0;top:calc(100% + 6px);min-width:160px;
+  background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:40;padding:6px;flex-direction:column;gap:4px
+}
+.topbar-menu.open .menu-panel{display:flex}
+.topbar-menu .menu-panel .btn{width:100%;text-align:left;border:none;background:transparent}
+.topbar-menu .menu-panel .btn:hover{background:var(--soft)}
+.icon-btn{min-width:40px;padding:8px 10px;font-size:16px;line-height:1}
+
+@media(max-width:768px){
+  .topbar{
+    gap:6px;padding:8px 10px;
+    padding-top:max(8px, env(safe-area-inset-top));
+    padding-left:max(10px, env(safe-area-inset-left));
+    padding-right:max(10px, env(safe-area-inset-right));
+    flex-wrap:nowrap;align-items:center;min-height:48px
+  }
+  .topbar h1{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:42vw;flex:0 1 auto}
+  .topbar .title-full{display:none}
+  .topbar .title-short{display:inline}
+  .topbar .pill{font-size:11px;padding:3px 8px;white-space:nowrap;flex:0 0 auto}
+  .topbar .spacer{display:none}
+  .topbar #themeBtn.desktop-only,
+  .topbar #endBtn.desktop-only{display:none !important}
+  .topbar-menu{display:block;margin-left:auto}
+  .topbar-menu .icon-btn.ghost{color:#fff;border-color:rgba(255,255,255,.35);background:transparent}
+  .wrap{padding:10px;padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+  .wrap.home-view{padding-bottom:max(18px, env(safe-area-inset-bottom))}
+  .hero{flex-direction:column;gap:10px}
+  .hero .mark{width:44px;height:44px}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .card{padding:12px;border-radius:10px;margin-bottom:10px}
+  .exam-shell{display:flex;flex-direction:column;gap:10px}
+  /* Question first; navigator is a drawer */
+  .exam-shell .qcard{order:1}
+  .exam-shell .nav-toggle{order:0;display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font-weight:600;font-size:14px}
+  .exam-shell .nav-toggle .chev{transition:transform .15s ease}
+  .exam-shell.nav-open .nav-toggle .chev{transform:rotate(180deg)}
+  .navpane{
+    display:none;order:2;position:fixed;left:0;right:0;bottom:0;z-index:50;
+    max-height:min(70vh, 520px);border-radius:16px 16px 0 0;padding:14px 12px calc(14px + env(safe-area-inset-bottom));
+    box-shadow:0 -8px 32px rgba(0,0,0,.25);overflow:auto;-webkit-overflow-scrolling:touch;
+    top:auto
+  }
+  .exam-shell.nav-open .navpane{display:block}
+  .nav-backdrop{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:45
+  }
+  .exam-shell.nav-open .nav-backdrop{display:block}
+  .navgrid{grid-template-columns:repeat(6,1fr);gap:8px}
+  .navbtn{min-height:44px;font-size:13px;padding:10px 0}
+  .qcard h2{font-size:13px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+  .tag{font-size:11px;margin:0}
+  .stem{font-size:16px;margin-bottom:12px}
+  .opt{padding:12px;min-height:44px;align-items:flex-start}
+  .opt input{width:18px;height:18px;margin-top:2px;flex:0 0 auto}
+  .matchrow{grid-template-columns:1fr;gap:6px}
+  .matchrow select{width:100%;min-height:44px;font-size:16px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+  .orderlist li{min-height:44px;padding:10px;gap:6px}
+  .orderlist li .btn{min-width:44px;min-height:44px;padding:8px;font-size:18px}
+  .logbox{font-size:12px;max-height:280px}
+  .logline{white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;align-items:flex-start}
+  .logline > span:last-child{white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;flex:1;min-width:0}
+  .toolbar.in-card,
+  .qcard .toolbar.in-card,
+  .card.qcard .toolbar.in-card{display:none !important} /* sticky bottombar only on mobile */
+  .bottombar{
+    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;
+    gap:8px;align-items:stretch;justify-content:space-between;
+    padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+    background:var(--panel);border-top:1px solid var(--line);
+    box-shadow:0 -2px 12px rgba(0,0,0,.08)
+  }
+  .bottombar .btn{
+    flex:1;min-height:48px;font-size:15px;font-weight:600;padding:10px 8px;
+    display:inline-flex;align-items:center;justify-content:center;text-align:center
+  }
+  .bottombar .btn.flag-btn{flex:0.85}
+  .bottombar .btn.check-btn{flex:1.2;font-size:13px}
+  .explainer .bd{font-size:14px;padding:12px;overflow-x:auto}
+  .explainer .anscmp{grid-template-columns:1fr;padding:10px}
+  .explainer .optlist li{overflow-wrap:anywhere}
+  .scorebig{font-size:36px}
+  .table{font-size:12px}
+  .table th,.table td{padding:6px 4px;font-size:12px}
+  .filterbar .btn{min-height:40px}
+  .footerhint{font-size:11px;overflow-wrap:anywhere}
+  kbd{display:none}
+  .footerhint-shortcuts{display:none}
+}
+
+@media(max-width:380px){
+  .navgrid{grid-template-columns:repeat(5,1fr)}
+  .topbar h1{max-width:36vw;font-size:13px}
+  .bottombar .btn{font-size:13px;padding:8px 4px}
+}
+
+
+
+@media(max-width:768px){
+  .wrap:not(.home-view){padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+  .checks{flex-direction:column;align-items:stretch;gap:10px}
+  .checks label{min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+  label.field > input, label.field > select, label.field > textarea{
+    min-height:44px;font-size:16px;padding:10px 12px;width:100%;max-width:100%
+  }
+  label.field > select[multiple]{min-height:180px}
+  .toolbar{gap:10px}
+  .toolbar .btn{min-height:44px;flex:1 1 auto}
+  .card h2,.card h3{overflow-wrap:anywhere;font-size:1.1rem}
+  .hero h2{font-size:1.15rem}
+  .banner{flex-wrap:wrap;gap:6px;padding:10px 12px}
+  .filterbar{gap:8px}
+  .filterbar .btn{flex:1 1 auto;min-height:44px}
+  .modePill-compact #modePill{max-width:38vw;overflow:hidden;text-overflow:ellipsis}
+  /* History/action buttons full-width stack */
+  .card .toolbar:not(.in-card){display:flex;flex-wrap:wrap}
+  .card .toolbar:not(.in-card) .btn{min-width:calc(50% - 8px)}
+  /* PBQ nested cards */
+  .qcard > .card{padding:10px;margin:8px 0}
+  .orderlist li span{overflow-wrap:anywhere;min-width:0}
+  .matchrow > div{overflow-wrap:anywhere}
+  /* Results review items */
+  #reviewList .stem{font-size:15px}
+  .explainer{max-width:100%}
+  .explainer .hd{font-size:14px;padding:10px 12px}
+  /* Confirm dialogs use native UI — nothing to style */
+  /* Prevent any fixed child from expanding page width */
+  .app,.wrap,.card,.exam-shell,.qcard,.navpane,.bottombar,.topbar{max-width:100vw}
+  img,svg,canvas,video{max-width:100%;height:auto}
+}
+
+/* Desktop: keep classic side navigator; hide mobile chrome */
+@media(min-width:769px){
+  .nav-toggle,.nav-backdrop,.bottombar,.topbar-menu{display:none !important}
+  .exam-shell{display:grid;grid-template-columns:240px 1fr;gap:14px}
+  .exam-shell .navpane{display:block !important;order:initial;position:sticky;top:60px;left:auto;right:auto;bottom:auto;max-height:calc(100vh - 100px);border-radius:12px;box-shadow:none;padding:10px}
+  .exam-shell .qcard{order:initial}
+  .exam-shell .navpane #navClose,
+  .exam-shell .navpane #navReview{display:none}
+  .toolbar.in-card{display:flex}
+  .wrap{padding-bottom:18px}
+}
+
 </style>
 </head>
 <body>
 <div class="app" id="app">
   <div class="topbar">
-    <h1>CompTIA CySA+ CS0-004 Practice</h1>
+    <h1><span class="title-full">CompTIA CySA+ CS0-004 Practice</span><span class="title-short">CySA+ CS0-004</span></h1>
     <span class="pill" id="modePill">Home</span>
     <span class="pill timer hidden" id="timerPill">165:00</span>
     <div class="spacer"></div>
-    <button class="btn ghost" id="themeBtn" title="Toggle theme">Theme</button>
-    <button class="btn ghost hidden" id="endBtn">End / Submit</button>
+    <button class="btn ghost desktop-only" id="themeBtn" title="Toggle theme">Theme</button>
+    <button class="btn ghost hidden desktop-only" id="endBtn">End / Submit</button>
+    <div class="topbar-menu" id="topMenu">
+      <button type="button" class="btn ghost icon-btn" id="menuBtn" aria-label="Menu" title="Menu">☰</button>
+      <div class="menu-panel" id="menuPanel">
+        <button type="button" class="btn" id="themeBtnMobile">Theme</button>
+        <button type="button" class="btn hidden" id="reviewBtnMobile">Review & Submit</button>
+        <button type="button" class="btn hidden" id="endBtnMobile">End / Submit</button>
+      </div>
+    </div>
   </div>
   <div class="wrap" id="view"></div>
 </div>
@@ -17425,7 +17604,25 @@ function setTheme(t){
   if (HAS_STORE) try{ localStorage.setItem('cysa_theme', t);}catch{}
 }
 setTheme((HAS_STORE && localStorage.getItem('cysa_theme')) || 'light');
-$('#themeBtn').onclick = ()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+function toggleTheme(){ setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'); }
+$('#themeBtn').onclick = toggleTheme;
+$('#themeBtnMobile').onclick = ()=>{ toggleTheme(); $('#topMenu').classList.remove('open'); };
+$('#menuBtn').onclick = (e)=>{ e.stopPropagation(); $('#topMenu').classList.toggle('open'); };
+document.addEventListener('click', (e)=>{
+  const m=$('#topMenu');
+  if (m && !m.contains(e.target)) m.classList.remove('open');
+});
+function setEndVisible(vis){
+  ['#endBtn','#endBtnMobile','#reviewBtnMobile'].forEach(sel=>{
+    const b=$(sel); if(!b) return;
+    b.classList.toggle('hidden', !vis);
+  });
+}
+$('#endBtnMobile').onclick = ()=>{ $('#topMenu').classList.remove('open'); finishExam(false); };
+$('#reviewBtnMobile').onclick = ()=>{
+  $('#topMenu').classList.remove('open');
+  if (state) renderReview();
+};
 
 function stopTimer(){ if (timerHandle){ clearInterval(timerHandle); timerHandle=null; } }
 function startTimer(){
@@ -17445,21 +17642,25 @@ function startTimer(){
 function goHome(){
   stopTimer(); state=null;
   $('#timerPill').classList.add('hidden');
-  $('#endBtn').classList.add('hidden');
+  setEndVisible(false);
   $('#modePill').textContent='Home';
+  document.body.classList.remove('modePill-compact');
+  const bb=$('#bottombar'); if(bb) bb.remove();
   renderHome();
 }
 
 function renderHome(){
   const hist = store.history.slice(-8).reverse();
   const view = $('#view');
+  view.classList.add('home-view');
   view.innerHTML = '';
+  const bb=$('#bottombar'); if(bb) bb.remove();
   view.appendChild(el(`<div class="card hero">
     <div class="mark">C+</div>
     <div>
       <h2 style="margin:0 0 6px">Offline CySA+ CS0-004 Practice Platform</h2>
       <p class="muted" style="margin:0">500 original questions · PBQs first in full exam · Scaled score 100–900 (pass 750) · Modules tagged from your course map · Works fully offline.</p>
-      <p class="footerhint">Shortcuts in exam: <kbd>←</kbd>/<kbd>→</kbd> navigate · <kbd>F</kbd> flag · <kbd>1-5</kbd> select option · <kbd>S</kbd> submit (review)</p>
+      <p class="footerhint footerhint-shortcuts">Shortcuts in exam: <kbd>←</kbd>/<kbd>→</kbd> navigate · <kbd>F</kbd> flag · <kbd>1-5</kbd> select option · <kbd>S</kbd> submit (review)</p>
     </div>
   </div>`));
 
@@ -17477,11 +17678,11 @@ function renderHome(){
       <div class="kpi"><b>${ALL.filter(q=>q.type==='multi').length}</b><span class="muted">Multi-select</span></div>
       <div class="kpi"><b>${Object.keys(MODULES).length}</b><span class="muted">Course modules</span></div>
     </div>
-    <table class="table" style="margin-top:12px"><thead><tr><th>Domain</th><th>Weight</th><th>Bank</th></tr></thead>
+    <div class="table-wrap" style="margin-top:12px"><table class="table"><thead><tr><th>Domain</th><th>Weight</th><th>Bank</th></tr></thead>
     <tbody>${[1,2,3,4].map(d=>{
       const n=ALL.filter(q=>q.domain===d).length;
       return `<tr><td>${d}.0 ${DOMAINS[d].name}</td><td>${DOMAINS[d].weight}%</td><td>${n} (${(n/ALL.length*100).toFixed(1)}%)</td></tr>`;
-    }).join('')}</tbody></table>
+    }).join('')}</tbody></table></div>
   </div>`));
 
   view.appendChild(el(`<div class="card"><h3 style="margin-top:0">History & data</h3>
@@ -17491,9 +17692,9 @@ function renderHome(){
       <button class="btn danger" id="resetBtn">Reset history</button>
       <input type="file" id="importFile" accept="application/json" class="hidden" />
     </div>
-    ${hist.length?`<table class="table" style="margin-top:12px"><thead><tr><th>When</th><th>Mode</th><th>Score</th><th>Result</th></tr></thead><tbody>
+    ${hist.length?`<div class="table-wrap" style="margin-top:12px"><table class="table"><thead><tr><th>When</th><th>Mode</th><th>Score</th><th>Result</th></tr></thead><tbody>
       ${hist.map(h=>`<tr><td>${esc(h.whenLocal)}</td><td>${esc(h.mode)}</td><td>${h.scaled}</td><td class="${h.pass?'pass':'fail'}">${h.pass?'PASS':'FAIL'}</td></tr>`).join('')}
-    </tbody></table>`:'<p class="muted">No attempts yet.</p>'}
+    </tbody></table></div>`:'<p class="muted">No attempts yet.</p>'}
     <p class="footerhint">Scaled scoring: percent correct maps linearly to 100–900; PBQs use partial credit and a small bonus when PBQ accuracy exceeds overall accuracy. Pass = 750. CompTIA's proprietary curve is not public — this is a transparent practice approximation.</p>
   </div>`));
 
@@ -17516,6 +17717,9 @@ function modeCard(title, desc, mode){
 
 function setupMode(mode){
   const view=$('#view'); view.innerHTML='';
+  view.classList.add('home-view');
+  const _bb=$('#bottombar'); if(_bb) _bb.remove();
+  setEndVisible(false);
   $('#modePill').textContent = mode;
   if (mode==='proctored'){
     view.appendChild(el(`<div class="card"><h2 style="margin-top:0">Full Proctored Simulation</h2>
@@ -17629,8 +17833,9 @@ function startExam(cfg){
     idx: 0,
     items: picked.map(q=>({q: prepareQuestion(q), user: null, flagged:false, revealed:false}))
   };
-  $('#endBtn').classList.remove('hidden');
+  setEndVisible(true);
   $('#endBtn').onclick = ()=> finishExam(false);
+  $('#view').classList.remove('home-view');
   $('#modePill').textContent = cfg.mode + ' · Q1/'+state.items.length;
   if (state.timed){ $('#timerPill').textContent=fmtTime(state.remaining); startTimer(); }
   else $('#timerPill').classList.add('hidden');
@@ -17639,14 +17844,31 @@ function startExam(cfg){
 
 function renderExam(){
   const view=$('#view'); view.innerHTML='';
-  const shell=el(`<div class="exam-shell"><div class="navpane"></div><div class="qcard card"></div></div>`);
+  view.classList.remove('home-view');
+  const answered = state.items.filter(i=>i.user!=null).length;
+  const flaggedN = state.items.filter(i=>i.flagged).length;
+  const shell=el(`<div class="exam-shell" id="examShell">
+    <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false">
+      <span>Questions ${state.idx+1}/${state.items.length} · ${answered} answered${flaggedN?` · ${flaggedN} flagged`:''}</span>
+      <span class="chev">▾</span>
+    </button>
+    <div class="nav-backdrop" id="navBackdrop"></div>
+    <div class="navpane" id="navpane"></div>
+    <div class="qcard card"></div>
+  </div>`);
   const nav=shell.querySelector('.navpane');
   const qcard=shell.querySelector('.qcard');
-  nav.appendChild(el(`<div style="font-size:13px;margin-bottom:8px"><b>Navigator</b> <span class="muted">${state.items.filter(i=>i.user!=null).length}/${state.items.length} answered · ${state.items.filter(i=>i.flagged).length} flagged</span></div>`));
+  nav.appendChild(el(`<div style="font-size:13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+    <div><b>Navigator</b> <span class="muted">${answered}/${state.items.length} answered · ${flaggedN} flagged</span></div>
+    <div style="display:flex;gap:6px">
+      <button type="button" class="btn primary" id="navReview" style="min-height:40px">Review & Submit</button>
+      <button type="button" class="btn" id="navClose" style="min-height:40px">Close</button>
+    </div>
+  </div>`));
   const grid=el(`<div class="navgrid"></div>`);
   state.items.forEach((it,i)=>{
     const b=el(`<button class="navbtn ${i===state.idx?'cur':''} ${it.user!=null?'ans':''} ${it.flagged?'flag':''}" type="button">${i+1}</button>`);
-    b.onclick=()=>{ state.idx=i; renderExam(); };
+    b.onclick=()=>{ state.idx=i; state.navOpen=false; renderExam(); };
     grid.appendChild(b);
   });
   nav.appendChild(grid);
@@ -17665,27 +17887,26 @@ function renderExam(){
   if (q.type==='pbq') renderPBQ(qcard, it);
   else renderMC(qcard, it);
 
-  const tb=el(`<div class="toolbar"></div>`);
+  const tb=el(`<div class="toolbar in-card"></div>`);
   const prev=el(`<button class="btn">Previous</button>`); prev.disabled=state.idx===0; prev.onclick=()=>{state.idx--; renderExam();};
   const next=el(`<button class="btn">Next</button>`); next.disabled=state.idx===state.items.length-1; next.onclick=()=>{state.idx++; renderExam();};
   const flag=el(`<button class="btn">${it.flagged?'Unflag':'Flag for review'}</button>`); flag.onclick=()=>{it.flagged=!it.flagged; renderExam();};
   const review=el(`<button class="btn primary">Review & Submit</button>`); review.onclick=()=> renderReview();
   tb.append(prev,next,flag,review);
+  let checkBtn=null;
   if (state.feedback && q.type!=='pbq'){
-    const chk=el(`<button class="btn primary">Check answer & show explainer</button>`);
-    chk.onclick=()=>{ it.revealed=true; renderExam(); }; // show full explainer
-    tb.appendChild(chk);
+    checkBtn=el(`<button class="btn primary">Check answer & show explainer</button>`);
+    checkBtn.onclick=()=>{ it.revealed=true; renderExam(); };
+    tb.appendChild(checkBtn);
   }
   if (state.feedback && q.type==='pbq'){
-    const chk=el(`<button class="btn primary">Check PBQ & show explainer</button>`);
-    chk.onclick=()=>{ it.revealed=true; renderExam(); }; // show full explainer
-    tb.appendChild(chk);
+    checkBtn=el(`<button class="btn primary">Check PBQ & show explainer</button>`);
+    checkBtn.onclick=()=>{ it.revealed=true; renderExam(); };
+    tb.appendChild(checkBtn);
   }
   qcard.appendChild(tb);
   qcard.appendChild(el(`<div class="footerhint">Module ${q.module}: ${esc(MODULES[q.module]||'')} · ${esc(q.section||'')} · ${esc(q.reference||'')}</div>`));
 
-  // Study / PBQ / weak-areas: show teaching explainer after answering.
-  // Single: auto after selection. Multi/PBQ: after "Check" (revealed=true).
   if (state.feedback) {
     if (q.type==='single' && it.user!=null) it.revealed = true;
     if (it.revealed) {
@@ -17694,7 +17915,47 @@ function renderExam(){
     }
   }
   view.appendChild(shell);
-  $('#modePill').textContent = `${state.mode} · Q${state.idx+1}/${state.items.length}`;
+
+  // Sticky bottom action bar (mobile CSS shows it; desktop CSS hides)
+  let bb = $('#bottombar');
+  if (!bb){ bb=el(`<div class="bottombar" id="bottombar"></div>`); document.getElementById('app').appendChild(bb); }
+  bb.innerHTML='';
+  const bPrev=el(`<button type="button" class="btn" ${state.idx===0?'disabled':''}>Prev</button>`);
+  bPrev.onclick=()=>{ if(state.idx>0){ state.idx--; renderExam(); } };
+  const bFlag=el(`<button type="button" class="btn flag-btn">${it.flagged?'Unflag':'Flag'}</button>`);
+  bFlag.onclick=()=>{ it.flagged=!it.flagged; renderExam(); };
+  const isLast = state.idx===state.items.length-1;
+  const needCheck = !!(state.feedback && !it.revealed && (q.type==='multi' || q.type==='pbq'));
+  // Study single auto-reveals; multi/PBQ need Check. Keep Check reachable on mobile.
+  if (needCheck){
+    const bChk=el(`<button type="button" class="btn primary check-btn">Check</button>`);
+    bChk.onclick=()=>{ it.revealed=true; renderExam(); };
+    const bNext=el(`<button type="button" class="btn">${isLast?'Review':'Next'}</button>`);
+    bNext.onclick=()=>{ if(isLast) renderReview(); else { state.idx++; renderExam(); } };
+    bb.append(bPrev, bFlag, bChk, bNext);
+  } else {
+    const bNext=el(`<button type="button" class="btn primary">${isLast?'Review':'Next'}</button>`);
+    bNext.onclick=()=>{ if(isLast) renderReview(); else { state.idx++; renderExam(); } };
+    bb.append(bPrev, bFlag, bNext);
+  }
+
+  // Navigator open/close
+  const setNav = (open)=>{
+    state.navOpen = !!open;
+    shell.classList.toggle('nav-open', !!open);
+    const tog = $('#navToggle');
+    if (tog) tog.setAttribute('aria-expanded', open?'true':'false');
+  };
+  $('#navToggle').onclick = ()=> setNav(!state.navOpen);
+  $('#navBackdrop').onclick = ()=> setNav(false);
+  $('#navClose').onclick = ()=> setNav(false);
+  const nr = $('#navReview');
+  if (nr) nr.onclick = ()=>{ setNav(false); renderReview(); };
+  if (state.navOpen) setNav(true);
+
+  const shortMode = ({proctored:'Exam',study:'Study',pbq:'PBQ',weak:'Weak'})[state.mode] || state.mode;
+  $('#modePill').textContent = `${shortMode} · Q${state.idx+1}/${state.items.length}`;
+  document.body.classList.add('modePill-compact');
 }
 
 function renderMC(qcard, it){
@@ -17784,6 +18045,8 @@ function renderPBQ(qcard, it){
 
 function renderReview(){
   const view=$('#view'); view.innerHTML='';
+  view.classList.remove('home-view');
+  const bb=$('#bottombar'); if(bb) bb.remove();
   const unanswered = state.items.map((it,i)=>it.user==null?i+1:null).filter(Boolean);
   const flagged = state.items.map((it,i)=>it.flagged?i+1:null).filter(Boolean);
   view.appendChild(el(`<div class="card"><h2 style="margin-top:0">Review before submit</h2>
@@ -17819,12 +18082,15 @@ function finishExam(auto){
   result._flaggedIndexes = state.items.map((it,i)=>it.flagged?i:-1).filter(i=>i>=0);
   renderResults(result, elapsed, auto);
   state=null;
-  $('#endBtn').classList.add('hidden');
+  setEndVisible(false);
   $('#timerPill').classList.add('hidden');
+  const bb=$('#bottombar'); if(bb) bb.remove();
 }
 
 function renderResults(result, elapsed, auto){
   const view=$('#view'); view.innerHTML='';
+  view.classList.remove('home-view');
+  const _bb=$('#bottombar'); if(_bb) _bb.remove();
   view.appendChild(el(`<div class="card">
     <h2 style="margin-top:0">Results ${auto?'(auto-submitted — time expired)':''}</h2>
     <div class="scorebig ${result.pass?'pass':'fail'}">${result.scaled}</div>
@@ -17844,14 +18110,14 @@ function renderResults(result, elapsed, auto){
       <td><div class="bar"><i style="width:${pct}%"></i></div></td></tr>`;
   }).join('');
   view.appendChild(el(`<div class="card"><h3 style="margin-top:0">Per-domain breakdown</h3>
-    <table class="table"><thead><tr><th>Domain</th><th>Points</th><th>%</th><th></th></tr></thead><tbody>${domRows}</tbody></table></div>`));
+    <div class="table-wrap"><table class="table"><thead><tr><th>Domain</th><th>Points</th><th>%</th><th></th></tr></thead><tbody>${domRows}</tbody></table></div></div>`));
 
   const modRows = Object.keys(result.mod).sort((a,b)=>a-b).map(m=>{
     const x=result.mod[m]; const pct=x.p?(x.e/x.p*100):0;
     return `<tr><td>Module ${m}: ${esc(MODULES[m]||'')}</td><td>${x.e.toFixed(1)}/${x.p}</td><td>${pct.toFixed(0)}%</td></tr>`;
   }).join('');
   view.appendChild(el(`<div class="card"><h3 style="margin-top:0">Per-module breakdown</h3>
-    <table class="table"><thead><tr><th>Module</th><th>Points</th><th>%</th></tr></thead><tbody>${modRows}</tbody></table></div>`));
+    <div class="table-wrap"><table class="table"><thead><tr><th>Module</th><th>Points</th><th>%</th></tr></thead><tbody>${modRows}</tbody></table></div></div>`));
 
   const list=el(`<div class="card"><h3 style="margin-top:0">Full question review</h3>
     <div class="filterbar">
