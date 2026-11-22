@@ -324,6 +324,70 @@ input,select,textarea{font-size:16px} /* prevent iOS zoom */
   .sheet label.field > textarea{min-height:88px}
 }
 
+
+/* Study plan */
+.plan-bar{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:12px}
+.plan-bar > span{display:block;height:100%;background:var(--brand2);border-radius:999px;min-width:0}
+.plan-list{display:flex;flex-direction:column;gap:10px}
+.plan-day{
+  border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--bg);
+  overflow-wrap:anywhere;max-width:100%;scroll-margin-top:64px
+}
+.plan-day[data-phase="D1"]{border-left:4px solid var(--brand)}
+.plan-day[data-phase="D2"]{border-left:4px solid var(--brand2)}
+.plan-day[data-phase="D3"]{border-left:4px solid var(--accent)}
+.plan-day[data-phase="D4"]{border-left:4px solid var(--ok)}
+.plan-day[data-phase="FINAL"]{border-left:4px solid var(--muted)}
+.plan-day.today{border-color:var(--brand2);background:var(--soft);box-shadow:inset 0 0 0 1px var(--brand2)}
+.plan-day.done{background:rgba(10,122,62,.08)}
+.plan-day.today.done{background:var(--soft)}
+.plan-day-hd{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.plan-day-hd b{font-size:15px}
+.plan-obj{font-weight:650;margin:8px 0 6px}
+.plan-focus,.plan-task{margin:8px 0;overflow-wrap:anywhere}
+.plan-label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px}
+.plan-controls{display:grid;gap:10px;margin-top:12px}
+.plan-done{
+  display:flex;align-items:center;gap:10px;min-height:44px;
+  padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel)
+}
+.plan-done input{width:22px;height:22px;flex:0 0 auto}
+.plan-controls .btn{min-height:44px}
+@media(max-width:768px){
+  .plan-day{padding:12px}
+  .plan-controls label.field > input{min-height:44px;font-size:16px}
+}
+
+
+/* My Notes */
+.q-report{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.note-btn{border:1px solid var(--line);background:transparent;color:var(--muted);padding:6px 10px;border-radius:8px;font-size:13px}
+.note-btn:hover{border-color:var(--brand2);color:var(--ink)}
+.note-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.note-card{
+  width:100%;text-align:left;border:1px solid var(--line);border-radius:10px;
+  padding:12px;background:var(--bg);color:var(--ink);overflow-wrap:anywhere
+}
+.note-card:hover{border-color:var(--brand2)}
+.note-card .preview{margin:8px 0 0;color:var(--muted);font-size:13px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.tag-row .chip{
+  display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;
+  background:var(--soft);font-size:12px;min-height:28px
+}
+.tag-row .chip button{
+  border:0;background:transparent;color:var(--muted);padding:0 2px;min-width:22px;min-height:22px;font-size:16px;line-height:1
+}
+.sheet .q-link{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);margin:0 0 12px;overflow-wrap:anywhere}
+.sheet .q-link .ans{font-size:13px;margin:6px 0 0}
+@media(max-width:768px){
+  .note-btn{min-height:44px}
+  .note-card{min-height:56px}
+  .sheet label.field > textarea{min-height:72px;font-size:16px}
+  .sheet label.field > input, .sheet label.field > select{min-height:44px;font-size:16px}
+  .sheet .toolbar .btn{min-height:44px}
+}
+
 /* Desktop: keep classic side navigator; hide mobile chrome */
 @media(min-width:769px){
   .nav-toggle,.nav-backdrop,.bottombar,.topbar-menu{display:none !important}
@@ -351,6 +415,9 @@ input,select,textarea{font-size:16px} /* prevent iOS zoom */
       <button type="button" class="btn ghost icon-btn" id="menuBtn" aria-label="Menu" title="Menu">☰</button>
       <div class="menu-panel" id="menuPanel">
         <button type="button" class="btn" id="themeBtnMobile">Theme</button>
+        <button type="button" class="btn" id="planBtnMobile">Study Plan</button>
+        <button type="button" class="btn" id="notesBtnMobile">My Notes</button>
+        <button type="button" class="btn" id="histBtnMobile">History</button>
         <button type="button" class="btn" id="reportsBtnMobile">Reported issues</button>
         <button type="button" class="btn hidden" id="reviewBtnMobile">Review & Submit</button>
         <button type="button" class="btn hidden" id="endBtnMobile">End / Submit</button>
@@ -17579,6 +17646,520 @@ function loadReports(){
 function saveReports(list){ if (HAS_STORE) try{ localStorage.setItem(REPORTS_KEY, JSON.stringify(list)); }catch{} }
 let reports = loadReports();
 
+const NOTES_KEY = 'cysa004_notes_v1';
+function emptyNotes(){ return []; }
+function normalizeNotes(list){
+  if (list && typeof list==='object' && !Array.isArray(list) && Array.isArray(list.notes)) list=list.notes;
+  if (!Array.isArray(list)) return [];
+  return list.map(n=>{
+    if (!n || typeof n!=='object' || Array.isArray(n)) return null;
+    const rec={
+      id: String(n.id||('n_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8))),
+      eli5: String(n.eli5||''),
+      missedWhy: String(n.missedWhy||''),
+      trick: String(n.trick||''),
+      tags: Array.isArray(n.tags) ? n.tags.map(t=>String(t).trim()).filter(Boolean) : String(n.tags||'').split(',').map(t=>t.trim()).filter(Boolean),
+      gotIt: !!n.gotIt,
+      when: n.when||new Date().toISOString(),
+      updated: n.updated||n.when||new Date().toISOString(),
+      whenLocal: n.whenLocal||''
+    };
+    if (n.questionId) rec.questionId=String(n.questionId);
+    if (n.title) rec.title=String(n.title);
+    const d=Number(n.domain);
+    if (d===1||d===2||d===3||d===4) rec.domain=d;
+    return rec;
+  }).filter(Boolean);
+}
+function loadNotes(){
+  if (!HAS_STORE) return [];
+  try { return normalizeNotes(JSON.parse(localStorage.getItem(NOTES_KEY)) || []); }
+  catch { return []; }
+}
+function saveNotes(list){ if (HAS_STORE) try{ localStorage.setItem(NOTES_KEY, JSON.stringify(list)); }catch{} }
+let notes = loadNotes();
+const notesView = {query:'', domain:'all', status:'all', includeGotIt:false};
+
+const PLAN_KEY = 'cysa004_plan_v1';
+const STUDY_PLAN = {
+  "phases": [
+    {
+      "key": "D1",
+      "heading": "Domain 1: Security Operations (days 1–8)"
+    },
+    {
+      "key": "D2",
+      "heading": "Domain 2: Vulnerability Management (days 9–15)"
+    },
+    {
+      "key": "D3",
+      "heading": "Domain 3: Incident Response and Management (days 16–20)"
+    },
+    {
+      "key": "D4",
+      "heading": "Domain 4: Reporting and Communication (days 21–23)"
+    },
+    {
+      "key": "FINAL",
+      "heading": "Final phase: mock exams and weak-area repair (days 24–33)"
+    }
+  ],
+  "days": [
+    {
+      "n": 1,
+      "iso": "2026-11-16",
+      "wd": "Mon",
+      "md": "Nov 16",
+      "phase": "D1",
+      "dom": "D1",
+      "obj": "1.1 System and network architecture (part 1)",
+      "mode": "Study",
+      "focus": "Logging concepts (ingestion, time sync, retention), OS hardening, Linux file structure and system processes, cloud-native, virtualization, containers, APIs. Your TestOut attempt missed standard Linux directories and the live process-monitoring command.",
+      "task": "Study mode · Domain 1 · Modules 3, 4, 8 · 25 questions · immediate feedback on. Read every explanation, right or wrong. Finish by writing from memory where Linux keeps config, logs and programs, and which command shows live process usage."
+    },
+    {
+      "n": 2,
+      "iso": "2026-11-17",
+      "wd": "Tue",
+      "md": "Nov 17",
+      "phase": "D1",
+      "dom": "D1",
+      "obj": "1.1 System and network architecture (part 2)",
+      "mode": "Study",
+      "focus": "IAM, PAM, authentication and authorization methods, secrets management, encryption, data protection, ZTNA, SASE, hybrid cloud, OT / ICS / SCADA, mobile and endpoint device management.",
+      "task": "Study mode · Domain 1 · Modules 4, 5 · 25 questions · feedback on. Re-read the explanation for every miss, then list the 3 concepts you hesitated on."
+    },
+    {
+      "n": 3,
+      "iso": "2026-11-18",
+      "wd": "Wed",
+      "md": "Nov 18",
+      "phase": "D1",
+      "dom": "D1",
+      "obj": "1.2 Indicators of potential malicious activity",
+      "mode": "Study",
+      "focus": "Network indicators (rogue devices, enumeration, unexpected ports), host indicators (LOLBins, file system changes, data exfiltration), identity indicators (impossible travel), typosquatting, URL shorteners, BEC. TestOut gave you partial credit on the rogue-device scan question.",
+      "task": "Study mode · Domain 1 · Modules 3, 10 · 25 questions. Module 10 also holds 1.3 tool questions, so you preview tomorrow. Review every explanation."
+    },
+    {
+      "n": 4,
+      "iso": "2026-11-19",
+      "wd": "Thu",
+      "md": "Nov 19",
+      "phase": "D1",
+      "dom": "D1",
+      "obj": "1.3 Tools to determine malicious activity (part 1)",
+      "mode": "Study",
+      "focus": "Packet analysis (Wireshark, tcpdump, Snort, Suricata, Zeek), SIEM, threat-intelligence platforms (OTX, MISP, OpenCTI), EDR / XDR / MDM, WHOIS, AbuseIPDB, GEO-IP.",
+      "task": "Study mode · Domain 1 · Module 10 · 30 questions · feedback on. Build a one-line list: tool → the job it does."
+    },
+    {
+      "n": 5,
+      "iso": "2026-11-20",
+      "wd": "Fri",
+      "md": "Nov 20",
+      "phase": "D1",
+      "dom": "D1",
+      "obj": "1.3 Tools (part 2), start of 1.5",
+      "mode": "Study",
+      "focus": "Strings, VirusTotal, YARA, sandboxing, CyberChef, regular expressions, interpreting suspicious commands, UEBA, MXToolbox, file formats (JSON, XML, YAML, EVTX), Python / PowerShell / shell. TestOut missed a JSON vs. XML question.",
+      "task": "Study mode · Domain 1 · Modules 10, 11 · 25 questions with PBQs included. Spend the last 15 minutes re-reading explanations for anything you missed."
+    },
+    {
+      "n": 6,
+      "iso": "2026-11-21",
+      "wd": "Sat",
+      "md": "Nov 21",
+      "phase": "D1",
+      "dom": "D1",
+      "obj": "1.4 Threat intelligence and threat hunting",
+      "mode": "Study",
+      "focus": "APT and insider threats, TTPs (heat maps, Pyramid of Pain, MITRE ATT&CK, attribution), confidence levels, OSINT vs. closed-source, atomic vs. behavioral IoCs, STRIDE, threat mapping, cyber deception.",
+      "task": "Study mode · Domain 1 · Modules 2, 6 · 25 questions · feedback on. Review every explanation."
+    },
+    {
+      "n": 7,
+      "iso": "2026-11-22",
+      "wd": "Sun",
+      "md": "Nov 22",
+      "phase": "D1",
+      "dom": "D1",
+      "obj": "1.5 Efficiency and process improvement · 1.6 AI in security operations",
+      "mode": "Study",
+      "focus": "Playbooks / runbooks, SOAR, IaC, data enrichment, rule and alert tuning, dashboard creation, APIs, webhooks, plug-ins. AI risks (hallucinations, data exposure, model poisoning, malicious prompts), governance, use cases. TestOut missed SIEM vs. SOAR and a dashboard-design question.",
+      "task": "Study mode · Domain 1 · Modules 11, 12 · 25 questions · feedback on. Then 5 minutes: say out loud how SIEM and SOAR differ."
+    },
+    {
+      "n": 8,
+      "iso": "2026-11-23",
+      "wd": "Mon",
+      "md": "Nov 23",
+      "phase": "D1",
+      "dom": "D1",
+      "obj": "Domain 1 review (1.1–1.6)",
+      "mode": "Weak areas",
+      "special": "review",
+      "focus": "Consolidate Domain 1. Use your own misses, not new material.",
+      "task": "Weak areas mode · 20 questions (draws from everything you have missed so far). Then Study mode · Domain 1 · all modules · 10 questions on the objective you scored lowest. Log the score."
+    },
+    {
+      "n": 9,
+      "iso": "2026-11-24",
+      "wd": "Tue",
+      "md": "Nov 24",
+      "phase": "D2",
+      "dom": "D2",
+      "obj": "2.1 Vulnerability scanning methods",
+      "mode": "Study",
+      "focus": "Asset inventory, planning (scheduling, operations, performance, sensitivity, segmentation, regulatory), internal vs. external, agent vs. agentless, credentialed vs. not, passive vs. active, mapping scans, fingerprinting, PCI DSS, CIS benchmarks, ISO 27000. TestOut missed a question on scan operations and change management.",
+      "task": "Study mode · Domain 2 · Module 7 · 25 questions · feedback on. For each scan type, note when you would pick it."
+    },
+    {
+      "n": 10,
+      "iso": "2026-11-25",
+      "wd": "Wed",
+      "md": "Nov 25",
+      "phase": "D2",
+      "dom": "D2",
+      "obj": "2.2 Output from vulnerability assessment tools",
+      "mode": "Study",
+      "focus": "Nmap, Masscan, Angry IP Scanner, Metasploit, Maltego, Recon-ng, Burp, ZAP, Nikto, Nessus, Nuclei, OpenVAS, ScoutSuite, Prowler, Trivy, Checkov, Atomic Red Team, Caldera. This is your biggest TestOut gap: all three labs (Zenmap / nmap scans) plus Nuclei and a tool-selection question.",
+      "task": "Study mode · Domain 2 · Modules 7, 13 · 25 questions with PBQs included. Make a one-line list: tool → what it is for (scan, map, web app, cloud, breach simulation)."
+    },
+    {
+      "n": 11,
+      "iso": "2026-11-26",
+      "wd": "Thu",
+      "md": "Nov 26",
+      "phase": "D2",
+      "dom": "D2",
+      "obj": "Thanksgiving: buffer day",
+      "mode": "Flex",
+      "special": "flex",
+      "focus": "Protected buffer so a holiday does not break the plan.",
+      "task": "Skip it guilt-free, or do a light touch: Weak areas mode · 10 questions (about 15 minutes). Tick Done only if you actually studied."
+    },
+    {
+      "n": 12,
+      "iso": "2026-11-27",
+      "wd": "Fri",
+      "md": "Nov 27",
+      "phase": "D2",
+      "dom": "D2",
+      "obj": "2.2 second pass (hands-on)",
+      "mode": "PBQ lab",
+      "focus": "Repeat the weak spot with hands-on practice: reading scanner and tool output.",
+      "task": "PBQ lab mode · 8 labs · feedback on. Work the scan-output labs slowly, then redo any you missed."
+    },
+    {
+      "n": 13,
+      "iso": "2026-11-28",
+      "wd": "Sat",
+      "md": "Nov 28",
+      "phase": "D2",
+      "dom": "D2",
+      "obj": "2.3 Prioritize and mitigate vulnerabilities",
+      "mode": "Study",
+      "focus": "Exploitability, active exploitation, asset value, impact, patch availability, true/false positives and negatives, CVSS metrics, EPSS, internal / external / isolated context, compensating controls, validation of remediation. TestOut gave partial credit on a question about exploitability metrics.",
+      "task": "Study mode · Domain 2 · Modules 3, 7, 14 · 25 questions · feedback on. For any scenario, be able to say why one vulnerability outranks another."
+    },
+    {
+      "n": 14,
+      "iso": "2026-11-29",
+      "wd": "Sun",
+      "md": "Nov 29",
+      "phase": "D2",
+      "dom": "D2",
+      "obj": "2.4 Control types, risk, vulnerability management",
+      "mode": "Study",
+      "focus": "Administrative / technical / physical controls, preventative / detective / responsive / corrective functions, risk appetite, residual and inherent risk, accept / transfer / avoid / mitigate, SLOs, SAST, DAST, SAMM, SCA, SBOM.",
+      "task": "Study mode · Domain 2 · Modules 1, 2, 13, 14 · 25 questions · feedback on. Review every explanation."
+    },
+    {
+      "n": 15,
+      "iso": "2026-11-30",
+      "wd": "Mon",
+      "md": "Nov 30",
+      "phase": "D2",
+      "dom": "D2",
+      "obj": "Domain 2 review (2.1–2.4)",
+      "mode": "Weak areas",
+      "special": "review",
+      "focus": "Consolidate Domain 2 and catch up anything skipped over Thanksgiving.",
+      "task": "Weak areas mode · 20 questions, then Study mode · Domain 2 · all modules · 10 questions on your lowest objective. Log the score."
+    },
+    {
+      "n": 16,
+      "iso": "2026-12-01",
+      "wd": "Tue",
+      "md": "Dec 1",
+      "phase": "D3",
+      "dom": "D3",
+      "obj": "3.1 Attack methodology frameworks",
+      "mode": "Study",
+      "focus": "Cyber Kill Chain, Diamond Model of Intrusion Analysis, MITRE ATT&CK. TestOut missed a Command and Control stage question and a Diamond Model question.",
+      "task": "Study mode · Domain 3 · Module 9 · 25 questions (Module 9 spans 3.1–3.3, which is fine). For each framework, be able to place a scenario in it."
+    },
+    {
+      "n": 17,
+      "iso": "2026-12-02",
+      "wd": "Wed",
+      "md": "Dec 2",
+      "phase": "D3",
+      "dom": "D3",
+      "obj": "3.2 The incident response process",
+      "mode": "Study",
+      "focus": "Preparation, detection, analysis, containment, eradication, recovery, post-incident.",
+      "task": "Study mode · Domain 3 · Modules 8, 9 · 25 questions. Start by reciting the seven phases in order, then check them against this list."
+    },
+    {
+      "n": 18,
+      "iso": "2026-12-03",
+      "wd": "Thu",
+      "md": "Dec 3",
+      "phase": "D3",
+      "dom": "D3",
+      "obj": "3.3 IR techniques (part 1)",
+      "mode": "Study",
+      "focus": "IR and communication plans, playbooks, roles, tabletop and simulation training, log collection, correlation and enrichment, alerts, triage, timeline, severity and impact, prioritization.",
+      "task": "Study mode · Domain 3 · Module 9 · 30 questions · feedback on. Review every explanation."
+    },
+    {
+      "n": 19,
+      "iso": "2026-12-04",
+      "wd": "Fri",
+      "md": "Dec 4",
+      "phase": "D3",
+      "dom": "D3",
+      "obj": "3.3 IR techniques (part 2)",
+      "mode": "Study",
+      "focus": "Evidence gathering (chain of custody, integrity validation, preservation, legal hold), isolation, escalation, remediation and verification, release from isolation, restoration, root cause analysis, corrective actions. TestOut missed a root cause analysis question.",
+      "task": "Study mode · Domain 3 · Modules 8, 9 · 25 questions with PBQs included. Be able to say, in one sentence, what root cause analysis adds that a fix alone does not."
+    },
+    {
+      "n": 20,
+      "iso": "2026-12-05",
+      "wd": "Sat",
+      "md": "Dec 5",
+      "phase": "D3",
+      "dom": "D3",
+      "obj": "Domain 3 review (3.1–3.3)",
+      "mode": "Weak areas",
+      "special": "review",
+      "focus": "Consolidate Domain 3 and give your scanning-tool gap one more pass.",
+      "task": "Weak areas mode · 20 questions, then PBQ lab mode · 4 labs. Log the score."
+    },
+    {
+      "n": 21,
+      "iso": "2026-12-06",
+      "wd": "Sun",
+      "md": "Dec 6",
+      "phase": "D4",
+      "dom": "D4",
+      "obj": "4.1 Vulnerability management reporting and communication",
+      "mode": "Study",
+      "focus": "Scan reports, compliance findings, risk scorecards, action plans (escalation, dependencies), inhibitors to remediation (contracts, governance, business interruption, legacy and proprietary systems, patch availability), stakeholders, metrics and KPIs (trends, top risks, SLAs).",
+      "task": "Study mode · Domain 4 · Module 7 · 25 questions · feedback on. Review every explanation."
+    },
+    {
+      "n": 22,
+      "iso": "2026-12-07",
+      "wd": "Mon",
+      "md": "Dec 7",
+      "phase": "D4",
+      "dom": "D4",
+      "obj": "4.2 SecOps and IR reporting and communication",
+      "mode": "Study",
+      "focus": "Incident declaration and escalation, executive summary, communication plan (legal, PR, regulators, law enforcement, customers), handover, post-incident reporting (after action report, lessons learned, RCA), metrics (alert volume, false- and true-positive rate, mean time to detect / respond / remediate / close, phishing click rate). TestOut missed a dashboard-design question.",
+      "task": "Study mode · Domain 4 · Module 8 · 30 questions · feedback on. Be able to define each metric in your own words."
+    },
+    {
+      "n": 23,
+      "iso": "2026-12-08",
+      "wd": "Tue",
+      "md": "Dec 8",
+      "phase": "D4",
+      "dom": "D4",
+      "obj": "Domain 4 review (4.1–4.2)",
+      "mode": "Weak areas",
+      "special": "review",
+      "focus": "Consolidate Domain 4. All four domains are now covered.",
+      "task": "Weak areas mode · 20 questions, then Study mode · Domain 4 · all modules · 10 questions. Log the score."
+    },
+    {
+      "n": 24,
+      "iso": "2026-12-09",
+      "wd": "Wed",
+      "md": "Dec 9",
+      "phase": "FINAL",
+      "dom": "All",
+      "obj": "Targeted repair",
+      "mode": "Study",
+      "focus": "Use your score log below to find the two domains with the lowest scores.",
+      "task": "Study mode · those two domains · all modules · 25 questions, then Weak areas mode · 10 questions."
+    },
+    {
+      "n": 25,
+      "iso": "2026-12-10",
+      "wd": "Thu",
+      "md": "Dec 10",
+      "phase": "FINAL",
+      "dom": "All",
+      "obj": "Performance-based question drill",
+      "mode": "PBQ lab",
+      "focus": "PBQs come first on the proctored exam, so practise them under time pressure.",
+      "task": "PBQ lab mode · 10 labs · timer 45 minutes · feedback OFF. Then use the remaining time to read the explanation for every lab you missed."
+    },
+    {
+      "n": 26,
+      "iso": "2026-12-11",
+      "wd": "Fri",
+      "md": "Dec 11",
+      "phase": "FINAL",
+      "dom": "All",
+      "obj": "Light day before mock exam 1",
+      "mode": "Weak areas",
+      "focus": "Keep it short so you are fresh tomorrow.",
+      "task": "Weak areas mode · 20 questions, then stop. Clear about 3 hours for tomorrow."
+    },
+    {
+      "n": 27,
+      "iso": "2026-12-12",
+      "wd": "Sat",
+      "md": "Dec 12",
+      "phase": "FINAL",
+      "dom": "All",
+      "obj": "Full mock exam 1",
+      "mode": "Proctored",
+      "special": "exam",
+      "focus": "A true single-sitting simulation.",
+      "task": "Proctored mode · 85 questions · 165 minutes · PBQs first · no feedback until you submit. This needs about 3 hours, so it will not fit the 5:30–6:30 PM block: start it at 5:30 PM only if you can stay until about 8:30 PM, or move it earlier in the day. The app has no pause. Log your scaled score.",
+      "note": "Pass line in this app is 750 on a 100–900 scale."
+    },
+    {
+      "n": 28,
+      "iso": "2026-12-13",
+      "wd": "Sun",
+      "md": "Dec 13",
+      "phase": "FINAL",
+      "dom": "All",
+      "obj": "Review mock exam 1",
+      "mode": "Weak areas",
+      "special": "review",
+      "focus": "The review is where the learning happens.",
+      "task": "Open the full question review for mock exam 1 and read the explanation for every miss and every question you flagged. Then Weak areas mode · 25 questions."
+    },
+    {
+      "n": 29,
+      "iso": "2026-12-14",
+      "wd": "Mon",
+      "md": "Dec 14",
+      "phase": "FINAL",
+      "dom": "All",
+      "obj": "Mock exam 2, sitting 1 of 3",
+      "mode": "Proctored",
+      "special": "exam",
+      "focus": "Mock exam 2 is split across three weekday sittings because 165 minutes will not fit in one hour.",
+      "task": "Proctored mode · set Count to 28 · aim to finish in about 50 minutes (the app timer still shows 165). Skim only; save the full explanation review for Thursday. Log the percent.",
+      "note": "Each sitting draws its own random 28, so questions can repeat across sittings."
+    },
+    {
+      "n": 30,
+      "iso": "2026-12-15",
+      "wd": "Tue",
+      "md": "Dec 15",
+      "phase": "FINAL",
+      "dom": "All",
+      "obj": "Mock exam 2, sitting 2 of 3",
+      "mode": "Proctored",
+      "special": "exam",
+      "focus": "Same format as yesterday.",
+      "task": "Proctored mode · Count 28 · about 50 minutes. Log the percent."
+    },
+    {
+      "n": 31,
+      "iso": "2026-12-16",
+      "wd": "Wed",
+      "md": "Dec 16",
+      "phase": "FINAL",
+      "dom": "All",
+      "obj": "Mock exam 2, sitting 3 of 3",
+      "mode": "Proctored",
+      "special": "exam",
+      "focus": "Last sitting. Average your three percents when you are done.",
+      "task": "Proctored mode · Count 28 · about 50 minutes. Log the percent, then write the average of all three sittings here."
+    },
+    {
+      "n": 32,
+      "iso": "2026-12-17",
+      "wd": "Thu",
+      "md": "Dec 17",
+      "phase": "FINAL",
+      "dom": "All",
+      "obj": "Review mock exam 2 and repair",
+      "mode": "Weak areas",
+      "special": "review",
+      "focus": "Everything you missed in both mock exams is in your Weak areas pool.",
+      "task": "Weak areas mode · 30 questions, then re-read the explanation for anything you have now missed twice."
+    },
+    {
+      "n": 33,
+      "iso": "2026-12-18",
+      "wd": "Fri",
+      "md": "Dec 18",
+      "phase": "FINAL",
+      "dom": "All",
+      "obj": "Final light review",
+      "mode": "Weak areas",
+      "special": "review",
+      "focus": "Nothing new. Confidence and rest.",
+      "task": "Weak areas mode · 15 questions, skim your miss notes, confirm your exam booking details, and stop early."
+    }
+  ]
+};
+function emptyPlan(){ return {days:{}}; }
+function normalizePlan(p){
+  if (!p || typeof p!=='object' || Array.isArray(p)) return emptyPlan();
+  const src = (p.days && typeof p.days==='object' && !Array.isArray(p.days)) ? p.days : {};
+  const days={};
+  Object.keys(src).forEach(k=>{
+    const v=src[k];
+    if (!v || typeof v!=='object' || Array.isArray(v)) return;
+    const rec={done:!!v.done};
+    if (v.score!==undefined && v.score!==null && String(v.score).trim()!==''){
+      const n=Number(v.score);
+      if (Number.isFinite(n)) rec.score=n;
+    }
+    if (typeof v.note==='string') rec.note=v.note;
+    days[String(k)]=rec;
+  });
+  return {days};
+}
+function loadPlan(){
+  if (!HAS_STORE) return emptyPlan();
+  try { return normalizePlan(JSON.parse(localStorage.getItem(PLAN_KEY)) || emptyPlan()); }
+  catch { return emptyPlan(); }
+}
+function savePlan(p){ if (HAS_STORE) try{ localStorage.setItem(PLAN_KEY, JSON.stringify(p)); }catch{} }
+let plan = loadPlan();
+function localISODate(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function planRec(n){ return plan.days[String(n)] || {}; }
+function planStats(){
+  const recs=STUDY_PLAN.days.map(d=>planRec(d.n));
+  const doneCount=recs.filter(r=>r.done).length;
+  const scores=recs.map(r=>r.score).filter(s=>s!==undefined && s!==null && Number.isFinite(Number(s))).map(Number);
+  const avg=scores.length? scores.reduce((a,b)=>a+b,0)/scores.length : null;
+  return {total:STUDY_PLAN.days.length, doneCount, avg, scoreN:scores.length};
+}
+function fmtAvg(stats){
+  if (!stats.scoreN || stats.avg==null) return '—';
+  const n=stats.avg;
+  return (Number.isInteger(n)? String(n) : String(Math.round(n*10)/10))+'%';
+}
+
 function $(sel, el=document){ return el.querySelector(sel); }
 function el(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstChild; }
 function shuffle(a){ const x=a.slice(); for(let i=x.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [x[i],x[j]]=[x[j],x[i]]; } return x; }
@@ -17673,6 +18254,9 @@ function toggleTheme(){ setTheme(document.documentElement.getAttribute('data-the
 $('#themeBtn').onclick = toggleTheme;
 $('#themeBtnMobile').onclick = ()=>{ toggleTheme(); $('#topMenu').classList.remove('open'); };
 $('#reportsBtnMobile').onclick = ()=>{ $('#topMenu').classList.remove('open'); renderReports(); };
+$('#planBtnMobile').onclick = ()=>{ $('#topMenu').classList.remove('open'); renderStudyPlan(); };
+$('#notesBtnMobile').onclick = ()=>{ $('#topMenu').classList.remove('open'); renderNotes(); };
+$('#histBtnMobile').onclick = ()=>{ $('#topMenu').classList.remove('open'); renderHistoryList(); };
 $('#menuBtn').onclick = (e)=>{ e.stopPropagation(); $('#topMenu').classList.toggle('open'); };
 document.addEventListener('click', (e)=>{
   const m=$('#topMenu');
@@ -17754,6 +18338,8 @@ function renderHome(){
 
   view.appendChild(el(`<div class="card"><h3 style="margin-top:0">History & data</h3>
     <div class="toolbar">
+      <button class="btn" id="planBtn">Study Plan (${planStats().doneCount}/${planStats().total})</button>
+      <button class="btn" id="notesBtn">My Notes${notes.length?` (${notes.length})`:''}</button>
       <button class="btn" id="reportsBtn">Reported issues${reports.length?` (${reports.length})`:''}</button>
       <button class="btn" id="allHistBtn">All sessions</button>
       <button class="btn" id="exportBtn">Export JSON</button>
@@ -17774,19 +18360,26 @@ function renderHome(){
       host.appendChild(histCard(h, idx));
     });
   }
+  $('#planBtn').onclick = ()=> renderStudyPlan();
+  $('#notesBtn').onclick = ()=> renderNotes();
   $('#reportsBtn').onclick = ()=> renderReports();
   $('#allHistBtn').onclick = ()=> renderHistoryList();
   $('#exportBtn').onclick = ()=>{
-    const blob = new Blob([JSON.stringify(store,null,2)], {type:'application/json'});
+    const payload=Object.assign({}, store, {plan, notes});
+    const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='cysa_practice_history.json'; a.click();
   };
-  $('#resetBtn').onclick = ()=>{ if(confirm('Reset all history and missed-question stats? Reported issues are kept.')){ store=emptyStore(); saveStore(store); renderHome(); } };
+  $('#resetBtn').onclick = ()=>{ if(confirm('Reset all history and missed-question stats? Reported issues, study-plan progress, and notes are kept.')){ store=emptyStore(); saveStore(store); renderHome(); } };
   $('#importBtn').onclick = ()=> $('#importFile').click();
   $('#importFile').onchange = async (e)=>{
     const f=e.target.files[0]; if(!f) return;
     try {
-      store = normalizeStore(JSON.parse(await f.text()));
-      saveStore(store); renderHome();
+      const data=JSON.parse(await f.text());
+      store = normalizeStore(data);
+      saveStore(store);
+      if (data.plan){ plan=normalizePlan(data.plan); savePlan(plan); }
+      if (data.notes){ notes=normalizeNotes(data.notes); saveNotes(notes); }
+      renderHome();
     } catch { alert('Could not import that file. It should be a history JSON export from this app.'); }
   };
 }
@@ -17821,7 +18414,8 @@ function modeCard(title, desc, mode){
   return c;
 }
 
-function setupMode(mode){
+function setupMode(mode, opts){
+  opts = opts || {};
   window.scrollTo(0,0);
   const view=$('#view'); view.innerHTML='';
   view.classList.add('home-view');
@@ -17868,7 +18462,7 @@ function setupMode(mode){
   // study
   view.appendChild(el(`<div class="card"><h2 style="margin-top:0">Domain / Module Study</h2>
     <p class="muted">Select one or more domains and optionally restrict by module.</p>
-    <div class="checks" id="doms">${[1,2,3,4].map(d=>`<label><input type="checkbox" value="${d}" checked /> ${d}.0 ${esc(DOMAINS[d].name)}</label>`).join('')}</div>
+    <div class="checks" id="doms">${[1,2,3,4].map(d=>{ const on=!opts.domains || opts.domains.includes(d); return `<label><input type="checkbox" value="${d}" ${on?'checked':''} /> ${d}.0 ${esc(DOMAINS[d].name)}</label>`; }).join('')}</div>
     <label class="field" style="margin-top:12px">Modules (Ctrl/Cmd-click multi)
       <select id="mods" multiple size="8">${Object.entries(MODULES).map(([k,v])=>`<option value="${k}" selected>Module ${k}: ${esc(v)}</option>`).join('')}</select>
     </label>
@@ -17991,7 +18585,7 @@ function renderExam(){
     ${it.flagged?'<span class="tag">FLAGGED</span>':''}
   </h2>`));
   qcard.appendChild(el(`<div class="stem">${esc(q.question || q.title || '')}</div>`));
-  qcard.appendChild(reportButton(q));
+  qcard.appendChild(reportButton(q, state.mode!=='proctored'));
   if (q.type==='pbq') renderPBQ(qcard, it);
   else renderMC(qcard, it);
 
@@ -18061,7 +18655,7 @@ function renderExam(){
   if (nr) nr.onclick = ()=>{ setNav(false); renderReview(); };
   if (state.navOpen) setNav(true);
 
-  const shortMode = ({proctored:'Exam',study:'Study',pbq:'PBQ',weak:'Weak'})[state.mode] || state.mode;
+  const shortMode = ({proctored:'Exam',study:'Study',pbq:'PBQ',weak:'Weak',notes:'Notes'})[state.mode] || state.mode;
   $('#modePill').textContent = `${shortMode} · Q${state.idx+1}/${state.items.length}`;
   document.body.classList.add('modePill-compact');
 }
@@ -18269,7 +18863,7 @@ function renderResults(result, elapsed, auto){
           ${isFlag?'<span class="tag">FLAGGED</span>':''}</div>
         <div class="stem" style="font-size:14px;margin:8px 0">${esc(d.q.question||d.q.title||'')}</div>
       </div>`);
-      wrap.appendChild(reportButton(d.q));
+      wrap.appendChild(reportButton(d.q, true));
       wrap.insertAdjacentHTML('beforeend', formatExplainerHtml(d.q, d.user, d));
       host.appendChild(wrap);
     });
@@ -18401,9 +18995,17 @@ function formatExplanationBody(raw){
 }
 
 
-function reportButton(q){
-  const wrap=el(`<div class="q-report"><button type="button" class="report-btn">Report issue</button></div>`);
-  wrap.querySelector('button').onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); openReportSheet(q); };
+function reportButton(q, allowNote){
+  const wrap=el(`<div class="q-report"></div>`);
+  if (allowNote && q && q.id){
+    const existing=noteForQuestion(q.id);
+    const nb=el(`<button type="button" class="note-btn" data-note-qid="${esc(q.id)}">${existing?'Edit note':'Add note'}</button>`);
+    nb.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); openNoteSheet({question:q}); };
+    wrap.appendChild(nb);
+  }
+  const rb=el(`<button type="button" class="report-btn">Report issue</button>`);
+  rb.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); openReportSheet(q); };
+  wrap.appendChild(rb);
   return wrap;
 }
 function questionSnapshot(q){
@@ -18415,9 +19017,42 @@ function questionSnapshot(q){
   };
 }
 function closeSheet(){
+  unbindSheetViewport();
   const bd=$('#sheetBackdrop'); if(bd) bd.remove();
   const sh=$('#issueSheet'); if(sh) sh.remove();
+  const ns=$('#noteSheet'); if(ns) ns.remove();
   document.body.style.overflow='';
+}
+let sheetViewportHandler=null;
+function unbindSheetViewport(){
+  if (!sheetViewportHandler) return;
+  const vv=window.visualViewport;
+  if (vv){ vv.removeEventListener('resize', sheetViewportHandler); vv.removeEventListener('scroll', sheetViewportHandler); }
+  window.removeEventListener('resize', sheetViewportHandler);
+  sheetViewportHandler=null;
+}
+function bindSheetViewport(sheet){
+  unbindSheetViewport();
+  const apply=()=>{
+    if (!sheet || !sheet.isConnected) return;
+    if (window.matchMedia('(min-width:769px)').matches){
+      sheet.style.bottom='';
+      sheet.style.maxHeight='';
+      return;
+    }
+    const vv=window.visualViewport;
+    const remaining = vv ? vv.height : window.innerHeight;
+    const offset = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
+    sheet.style.bottom = offset+'px';
+    sheet.style.maxHeight = Math.max(220, remaining - 8)+'px';
+    const ae=document.activeElement;
+    if (ae && sheet.contains(ae) && typeof ae.scrollIntoView==='function') ae.scrollIntoView({block:'nearest'});
+  };
+  sheetViewportHandler=apply;
+  const vv=window.visualViewport;
+  if (vv){ vv.addEventListener('resize', apply); vv.addEventListener('scroll', apply); }
+  window.addEventListener('resize', apply);
+  apply();
 }
 function openReportSheet(q){
   if (!q) return;
@@ -18451,6 +19086,7 @@ function openReportSheet(q){
     </div>
   </div>`);
   document.body.append(backdrop, sheet);
+  bindSheetViewport(sheet);
   $('#issueCancel').onclick=closeSheet;
   $('#issueSave').onclick=()=>{
     const reasonEl=sheet.querySelector('input[name=reason]:checked');
@@ -18504,6 +19140,438 @@ async function exportReportsFile(){
   a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
   a.download=name; a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+
+
+function findQuestion(id){ return ALL.find(q=>q.id===id) || null; }
+function noteForQuestion(id){ return id ? notes.find(n=>n.questionId===id) : null; }
+function noteIsEmpty(n){
+  if (!n) return true;
+  return !(n.title||'').trim() && !(n.eli5||'').trim() && !(n.missedWhy||'').trim() && !(n.trick||'').trim() && !(n.tags&&n.tags.length);
+}
+function noteDomainOf(n){
+  if (n.domain===1||n.domain===2||n.domain===3||n.domain===4) return n.domain;
+  if (n.questionId){
+    const q=findQuestion(n.questionId);
+    if (q && (q.domain===1||q.domain===2||q.domain===3||q.domain===4)) return q.domain;
+  }
+  return 'general';
+}
+function noteHeading(n){
+  if (n.title && n.title.trim()) return n.title.trim();
+  if (n.questionId){
+    const q=findQuestion(n.questionId);
+    const stem=((q&&(q.question||q.title))||'').trim();
+    return n.questionId+(stem?(' · '+stem):'');
+  }
+  return 'Untitled note';
+}
+function upsertNote(rec){
+  rec.updated=new Date().toISOString();
+  rec.whenLocal=new Date().toLocaleString('en-US',{timeZone:'America/New_York'})+' ET';
+  if (!rec.when) rec.when=rec.updated;
+  const i=notes.findIndex(n=>n.id===rec.id);
+  if (i>=0) notes[i]=rec;
+  else notes.unshift(rec);
+  saveNotes(notes);
+}
+function deleteNote(id){
+  notes=notes.filter(n=>n.id!==id);
+  saveNotes(notes);
+}
+function refreshNoteButtons(){
+  document.querySelectorAll('.note-btn[data-note-qid]').forEach(b=>{
+    b.textContent = noteForQuestion(b.getAttribute('data-note-qid')) ? 'Edit note' : 'Add note';
+  });
+}
+let noteEditor=null;
+function closeNoteEditor(){
+  const ed=noteEditor;
+  noteEditor=null;
+  if (ed && ed.isNew){
+    const rec=notes.find(n=>n.id===ed.id);
+    if (!rec || noteIsEmpty(rec)) deleteNote(ed.id);
+  }
+  closeSheet();
+  if ($('#modePill') && $('#modePill').textContent==='My Notes') renderNotes();
+  else refreshNoteButtons();
+}
+function collectNoteFromSheet(sheet){
+  const ed=noteEditor;
+  if (!ed || !sheet) return null;
+  const rec={
+    id:ed.id,
+    eli5:(($('#noteEli5')&&$('#noteEli5').value)||'').trim(),
+    missedWhy:(($('#noteMissed')&&$('#noteMissed').value)||'').trim(),
+    trick:(($('#noteTrick')&&$('#noteTrick').value)||'').trim(),
+    tags: Array.isArray(ed.tags) ? ed.tags.slice() : [],
+    gotIt: !!( $('#noteGotIt') && $('#noteGotIt').checked ),
+    when: ed.when || new Date().toISOString()
+  };
+  if (ed.questionId) rec.questionId=ed.questionId;
+  const titleEl=$('#noteTitle');
+  if (titleEl) rec.title=(titleEl.value||'').trim();
+  else if (ed.title) rec.title=ed.title;
+  const domEl=$('#noteDomain');
+  if (domEl && domEl.value) rec.domain=+domEl.value;
+  else if (ed.domain===1||ed.domain===2||ed.domain===3||ed.domain===4) rec.domain=ed.domain;
+  return rec;
+}
+function saveNoteFromSheet(){
+  const sheet=$('#noteSheet');
+  const rec=collectNoteFromSheet(sheet);
+  if (!rec) return;
+  upsertNote(rec);
+  if (noteEditor) noteEditor.isNew=false;
+}
+function renderTagChips(host, tags, onChange){
+  host.innerHTML='';
+  tags.forEach((t,i)=>{
+    const chip=el(`<span class="chip">${esc(t)} <button type="button" aria-label="Remove tag">×</button></span>`);
+    chip.querySelector('button').onclick=()=>{
+      tags.splice(i,1);
+      renderTagChips(host, tags, onChange);
+      onChange();
+    };
+    host.appendChild(chip);
+  });
+}
+function openNoteSheet(opts){
+  opts=opts||{};
+  closeSheet();
+  const q = opts.question ? (findQuestion(opts.question.id) || opts.question) : (opts.questionId ? findQuestion(opts.questionId) : null);
+  let rec = opts.note || (q && noteForQuestion(q.id)) || null;
+  const isNew = !rec;
+  if (!rec){
+    rec={
+      id:'n_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8),
+      eli5:'', missedWhy:'', trick:'', tags:[], gotIt:false,
+      when:new Date().toISOString()
+    };
+    if (q && q.id){
+      rec.questionId=q.id;
+      if (q.domain===1||q.domain===2||q.domain===3||q.domain===4) rec.domain=q.domain;
+    }
+  }
+  rec.tags = Array.isArray(rec.tags) ? rec.tags.slice() : [];
+  noteEditor={id:rec.id, isNew, questionId:rec.questionId||null, title:rec.title||'', domain:rec.domain, tags:rec.tags, when:rec.when};
+  document.body.style.overflow='hidden';
+  const backdrop=el(`<div class="sheet-backdrop" id="sheetBackdrop"></div>`);
+  backdrop.onclick=()=> closeNoteEditor();
+  const linked = !!(rec.questionId && q);
+  const titleField = linked ? '' : `<label class="field">Title<input id="noteTitle" type="text" maxlength="120" placeholder="What's this about?" value="${esc(rec.title||'')}" /></label>`;
+  const domainField = linked ? '' : `<label class="field">Domain
+    <select id="noteDomain">
+      <option value="">General</option>
+      ${[1,2,3,4].map(d=>`<option value="${d}" ${rec.domain===d?'selected':''}>${d}.0 ${esc(DOMAINS[d].name)}</option>`).join('')}
+    </select>
+  </label>`;
+  const qLink = linked ? `<div class="q-link">
+      <div><span class="tag">${esc(q.id)}</span> <span class="tag">Domain ${esc(q.domain)}</span></div>
+      <p style="margin:8px 0 0">${esc(q.question||q.title||'')}</p>
+      <p class="ans muted"><b>Correct answer:</b> ${esc(formatAnswer(q))}</p>
+      <button type="button" class="btn" id="noteViewQ" style="margin-top:10px;min-height:44px;width:100%">View question + explanation</button>
+    </div>` : '';
+  const sheet=el(`<div class="sheet" id="noteSheet" role="dialog" aria-modal="true" aria-labelledby="noteSheetTitle">
+    <h3 id="noteSheetTitle">${isNew?(linked?'Add note':'New note'):'Edit note'}</h3>
+    ${qLink}
+    ${titleField}
+    ${domainField}
+    <label class="field">In plain English (ELI5)<textarea id="noteEli5" rows="4" placeholder="Explain it like I'm 5">${esc(rec.eli5||'')}</textarea></label>
+    <label class="field">Why I got it wrong<textarea id="noteMissed" rows="3" placeholder="What tripped you up?">${esc(rec.missedWhy||'')}</textarea></label>
+    <label class="field">Memory trick (optional)<input id="noteTrick" type="text" maxlength="200" placeholder="A hook so it sticks" value="${esc(rec.trick||'')}" /></label>
+    <div class="muted" style="font-size:13px;margin-top:8px">Tags</div>
+    <div class="tag-row" id="noteTagChips"></div>
+    <label class="field"><input id="noteTagInput" type="text" maxlength="40" placeholder="Type a tag, then comma or Enter" /></label>
+    <label class="plan-done" style="margin-top:10px"><input type="checkbox" id="noteGotIt" ${rec.gotIt?'checked':''} /> Got it</label>
+    <div class="toolbar" style="margin-top:12px">
+      <button type="button" class="btn" id="noteDone">Done</button>
+      <button type="button" class="btn danger" id="noteDelete">Delete</button>
+    </div>
+  </div>`);
+  document.body.append(backdrop, sheet);
+  bindSheetViewport(sheet);
+  const chips=$('#noteTagChips');
+  const flushTag=()=>{
+    const inp=$('#noteTagInput');
+    const t=(inp.value||'').trim().replace(/,$/,'');
+    if (t && !noteEditor.tags.some(x=>x.toLowerCase()===t.toLowerCase())){
+      noteEditor.tags.push(t);
+      renderTagChips(chips, noteEditor.tags, saveNoteFromSheet);
+    }
+    inp.value='';
+  };
+  renderTagChips(chips, noteEditor.tags, saveNoteFromSheet);
+  const tagInp=$('#noteTagInput');
+  tagInp.addEventListener('keydown', e=>{
+    if (e.key==='Enter' || e.key===','){ e.preventDefault(); flushTag(); saveNoteFromSheet(); }
+  });
+  tagInp.addEventListener('blur', ()=>{ if((tagInp.value||'').trim()){ flushTag(); saveNoteFromSheet(); } });
+  ['noteEli5','noteMissed','noteTrick','noteTitle','noteDomain','noteGotIt'].forEach(id=>{
+    const node=$('#'+id);
+    if (!node) return;
+    node.addEventListener(node.type==='checkbox'||node.tagName==='SELECT'?'change':'input', saveNoteFromSheet);
+  });
+  $('#noteDone').onclick=()=> closeNoteEditor();
+  const del=$('#noteDelete');
+  if (del) del.onclick=()=>{
+    if (!confirm('Delete this note?')) return;
+    deleteNote(noteEditor.id);
+    noteEditor=null;
+    closeSheet();
+    if ($('#modePill') && $('#modePill').textContent==='My Notes') renderNotes();
+    else refreshNoteButtons();
+  };
+  const viewBtn=$('#noteViewQ');
+  if (viewBtn) viewBtn.onclick=()=>{
+    saveNoteFromSheet();
+    const qid=noteEditor.questionId;
+    const nid=noteEditor.id;
+    noteEditor=null;
+    closeSheet();
+    renderNoteQuestionView(qid, ()=> openNoteSheet({questionId:qid, note:notes.find(n=>n.id===nid)}));
+  };
+}
+function renderNoteQuestionView(qid, back){
+  const q=findQuestion(qid);
+  const view=beginAuxView('Question');
+  view.appendChild(el(`<div class="card">
+    <div class="toolbar"><button type="button" class="btn" id="nqBack">Back</button></div>
+    ${q?`
+      <h2 style="margin:12px 0 8px"><span class="tag">${esc(q.id)}</span> <span class="tag">Domain ${esc(q.domain)}</span> <span class="tag">${esc(q.type)}</span> <span class="tag">Obj ${esc(q.objective||'')}</span></h2>
+      <div class="stem">${esc(q.question||q.title||'')}</div>
+    `:'<p class="muted">That question is not in this question bank.</p>'}
+  </div>`));
+  $('#nqBack').onclick=()=> (typeof back==='function'?back():renderNotes());
+  if (!q) return;
+  if ((q.type==='single'||q.type==='multi') && Array.isArray(q.options)){
+    const ans=new Set(q.answer||[]);
+    const box=el(`<div class="card"><div class="options"></div></div>`);
+    const host=box.querySelector('.options');
+    q.options.forEach((opt,i)=>{
+      host.appendChild(el(`<div class="opt ${ans.has(i)?'correct':''}"><span><b>${String.fromCharCode(65+i)}.</b> ${esc(opt)}</span></div>`));
+    });
+    view.appendChild(box);
+  }
+  const expl=el(`<div class="card"></div>`);
+  expl.innerHTML = `<p class="ansline"><b>Correct answer:</b> ${esc(formatAnswer(q))}</p>` + formatExplainerHtml(q, q.answer, {correct:true, earned:1, possible:1}).replace(/<div class="banner ok">[\s\S]*?<\/div>/,'');
+  view.appendChild(expl);
+}
+function filteredNotes(){
+  const q=(notesView.query||'').trim().toLowerCase();
+  return notes.filter(n=>{
+    const dom=noteDomainOf(n);
+    if (notesView.domain==='general' && dom!=='general') return false;
+    if (notesView.domain!=='all' && notesView.domain!=='general' && String(dom)!==String(notesView.domain)) return false;
+    if (notesView.status==='shaky' && n.gotIt) return false;
+    if (notesView.status==='gotit' && !n.gotIt) return false;
+    if (!q) return true;
+    const qq=n.questionId?findQuestion(n.questionId):null;
+    const hay=[n.title, n.eli5, n.missedWhy, n.trick, (n.tags||[]).join(' '), n.questionId, noteHeading(n), qq&&(qq.question||qq.title)].join(' ').toLowerCase();
+    return hay.includes(q);
+  }).slice().sort((a,b)=> String(b.updated||b.when||'').localeCompare(String(a.updated||a.when||'')));
+}
+function startNotesQuiz(){
+  const include = !!( $('#quizIncludeGotIt') && $('#quizIncludeGotIt').checked );
+  notesView.includeGotIt=include;
+  const linked=notes.filter(n=>n.questionId && (include || !n.gotIt));
+  const ids=[];
+  linked.forEach(n=>{ if (!ids.includes(n.questionId)) ids.push(n.questionId); });
+  const pool=ALL.filter(q=>ids.includes(q.id));
+  if (!pool.length){
+    alert(include ? 'No questions are linked to your notes yet.' : 'No Shaky notes are linked to questions. Add a note on a question, or include Got it.');
+    return;
+  }
+  startExam({mode:'notes', count:pool.length, minutes:0, feedback:true, pbqFirst:false, pool});
+}
+function renderNotes(){
+  const view=beginAuxView('My Notes');
+  const list=filteredNotes();
+  const shakyN=notes.filter(n=>n.questionId && !n.gotIt).length;
+  const linkedN=notes.filter(n=>n.questionId).length;
+  view.appendChild(el(`<div class="card">
+    <h2 style="margin-top:0">My Notes</h2>
+    <p class="muted">Plain-English reminders for questions you want to keep. Saved on this device.</p>
+    <div class="toolbar">
+      <button type="button" class="btn" id="notesBack">Back</button>
+      <button type="button" class="btn primary" id="newNoteBtn">+ New note</button>
+    </div>
+    <label class="field" style="margin-top:12px">Search<input id="notesSearch" type="search" placeholder="Search notes" value="${esc(notesView.query)}" /></label>
+    <div class="muted" style="font-size:13px;margin-top:10px">Domain</div>
+    <div class="filterbar" id="notesDomFilter">
+      <button type="button" class="btn ${notesView.domain==='all'?'active':''}" data-d="all">All</button>
+      ${[1,2,3,4].map(d=>`<button type="button" class="btn ${String(notesView.domain)===String(d)?'active':''}" data-d="${d}">${d}</button>`).join('')}
+      <button type="button" class="btn ${notesView.domain==='general'?'active':''}" data-d="general">General</button>
+    </div>
+    <div class="muted" style="font-size:13px;margin-top:6px">Status</div>
+    <div class="filterbar" id="notesStatusFilter">
+      <button type="button" class="btn ${notesView.status==='all'?'active':''}" data-s="all">All</button>
+      <button type="button" class="btn ${notesView.status==='shaky'?'active':''}" data-s="shaky">Shaky</button>
+      <button type="button" class="btn ${notesView.status==='gotit'?'active':''}" data-s="gotit">Got it</button>
+    </div>
+    <div class="toolbar" style="margin-top:12px">
+      <button type="button" class="btn primary" id="notesQuiz" ${linkedN?'':'disabled'}>Quiz me on my notes</button>
+    </div>
+    <label class="plan-done" style="margin-top:8px"><input type="checkbox" id="quizIncludeGotIt" ${notesView.includeGotIt?'checked':''} /> Include Got it (${shakyN} Shaky linked${linkedN?`, ${linkedN} linked total`:''})</label>
+  </div>`));
+  $('#notesBack').onclick=backFromAux;
+  $('#newNoteBtn').onclick=()=> openNoteSheet({});
+  $('#notesQuiz').onclick=startNotesQuiz;
+  $('#quizIncludeGotIt').onchange=()=>{ notesView.includeGotIt=$('#quizIncludeGotIt').checked; };
+  $('#notesSearch').addEventListener('input', e=>{ notesView.query=e.target.value; paintNotesList(); });
+  view.querySelectorAll('#notesDomFilter .btn').forEach(b=>{
+    b.onclick=()=>{ notesView.domain=b.getAttribute('data-d'); renderNotes(); };
+  });
+  view.querySelectorAll('#notesStatusFilter .btn').forEach(b=>{
+    b.onclick=()=>{ notesView.status=b.getAttribute('data-s'); renderNotes(); };
+  });
+  const listCard=el(`<div class="card"><div class="note-list" id="notesList"></div></div>`);
+  view.appendChild(listCard);
+  function paintNotesList(){
+    const host=$('#notesList');
+    if (!host) return;
+    host.innerHTML='';
+    const rows=filteredNotes();
+    if (!rows.length){
+      host.appendChild(el(`<p class="muted" style="margin:0">${notes.length?'No notes match these filters.':'No notes yet. Add one from a question, or tap + New note.'}</p>`));
+      return;
+    }
+    rows.forEach(n=>{
+      const dom=noteDomainOf(n);
+      const preview=n.eli5||n.missedWhy||n.trick||'';
+      const card=el(`<button type="button" class="note-card">
+        <div class="plan-day-hd">
+          <b style="overflow-wrap:anywhere">${esc(noteHeading(n))}</b>
+          <span class="tag">${n.gotIt?'Got it':'Shaky'}</span>
+          <span class="tag">${dom==='general'?'General':('Domain '+dom)}</span>
+          ${n.questionId?`<span class="tag">${esc(n.questionId)}</span>`:''}
+        </div>
+        ${(n.tags||[]).length?`<div class="tag-row">${n.tags.map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div>`:''}
+        ${preview?`<p class="preview">${esc(preview)}</p>`:''}
+      </button>`);
+      card.onclick=()=> openNoteSheet({note:n, questionId:n.questionId});
+      host.appendChild(card);
+    });
+  }
+  paintNotesList();
+}
+
+function startPlanPractice(day){
+  const mode=(day.mode||'').toLowerCase();
+  if (mode==='pbq lab') return setupMode('pbq');
+  if (mode==='weak areas' || mode==='flex') return setupMode('weak');
+  if (mode==='proctored') return setupMode('proctored');
+  const m=/^D([1-4])$/.exec(day.dom||'');
+  if (m) return setupMode('study', {domains:[+m[1]]});
+  return setupMode('study');
+}
+function updatePlanDay(n, patch){
+  const k=String(n);
+  const cur=Object.assign({done:false}, plan.days[k]||{});
+  if (patch.done!==undefined) cur.done=!!patch.done;
+  if ('score' in patch){
+    if (patch.score===null || patch.score===undefined || String(patch.score).trim()==='') delete cur.score;
+    else {
+      const num=Number(patch.score);
+      if (Number.isFinite(num)) cur.score=num;
+    }
+  }
+  if ('note' in patch){
+    if (String(patch.note||'').trim()==='') delete cur.note;
+    else cur.note=String(patch.note);
+  }
+  plan.days[k]=cur;
+  savePlan(plan);
+}
+function refreshPlanSummary(){
+  const host=$('#planSummary');
+  if (!host) return;
+  const stats=planStats();
+  const today=localISODate();
+  const todayDay=STUDY_PLAN.days.find(d=>d.iso===today);
+  const bs=host.querySelectorAll('.kpi b');
+  if (bs[0]) bs[0].textContent=stats.doneCount+' / '+stats.total;
+  if (bs[1]) bs[1].textContent=fmtAvg(stats);
+  if (bs[2]) bs[2].textContent=todayDay?('Day '+todayDay.n):'—';
+  const bar=host.querySelector('.plan-bar span');
+  if (bar) bar.style.width=Math.round(stats.doneCount/stats.total*100)+'%';
+}
+function planDayCard(d, today){
+  const rec=planRec(d.n);
+  const isToday=d.iso===today;
+  const isDone=!!rec.done;
+  const scoreVal=(rec.score!==undefined && rec.score!==null)? rec.score : '';
+  const noteVal=rec.note||'';
+  const tags=[
+    d.dom==='All'?'All domains':('Domain '+String(d.dom||'').replace(/^D/,'')),
+    d.mode,
+    d.special==='exam'?'Mock exam':'',
+    d.special==='flex'?'Buffer':'',
+    d.special==='review'?'Review':'',
+    isToday?'Today':''
+  ].filter(Boolean);
+  const card=el(`<div class="plan-day${isToday?' today':''}${isDone?' done':''}" id="plan-day-${d.n}" data-n="${d.n}" data-phase="${esc(d.phase||'')}">
+    <div class="plan-day-hd">
+      <b>Day ${d.n} · ${esc(d.wd)} ${esc(d.md)}</b>
+      ${tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}
+    </div>
+    <div class="plan-obj">${esc(d.obj)}</div>
+    <p class="plan-focus"><span class="plan-label">Focus</span> ${esc(d.focus)}</p>
+    <p class="plan-task"><span class="plan-label">Your hour in the app</span> ${esc(d.task)}</p>
+    ${d.note?`<p class="muted">${esc(d.note)}</p>`:''}
+    <div class="plan-controls">
+      <label class="plan-done"><input type="checkbox" ${isDone?'checked':''} /> Mark done</label>
+      <label class="field">Score (%)<input type="number" min="0" max="100" step="any" inputmode="decimal" placeholder="e.g. 78" value="${esc(String(scoreVal))}" /></label>
+      <label class="field">Note (optional)<input type="text" maxlength="200" placeholder="Short note" value="${esc(noteVal)}" /></label>
+      <button type="button" class="btn plan-start">Start practice</button>
+    </div>
+  </div>`);
+  const box=card.querySelector('input[type=checkbox]');
+  const score=card.querySelector('input[type=number]');
+  const note=card.querySelector('input[type=text]');
+  box.addEventListener('change', ()=>{
+    updatePlanDay(d.n, {done:box.checked});
+    card.classList.toggle('done', box.checked);
+    refreshPlanSummary();
+  });
+  const saveFields=()=>{
+    updatePlanDay(d.n, {done:box.checked, score:score.value.trim()===''?null:score.value, note:note.value});
+    refreshPlanSummary();
+  };
+  score.addEventListener('input', saveFields);
+  note.addEventListener('input', saveFields);
+  card.querySelector('.plan-start').onclick=()=> startPlanPractice(d);
+  return card;
+}
+function renderStudyPlan(){
+  const view=beginAuxView('Study Plan');
+  const today=localISODate();
+  const stats=planStats();
+  const todayDay=STUDY_PLAN.days.find(d=>d.iso===today);
+  view.appendChild(el(`<div class="card" id="planSummary">
+    <h2 style="margin-top:0">Study Plan</h2>
+    <p class="muted">33 one-hour sessions at 5:30 PM, Nov 16 – Dec 18. Your checkmarks, scores, and notes are saved on this device.</p>
+    <div class="kpis">
+      <div class="kpi"><b>${stats.doneCount} / ${stats.total}</b><span class="muted">Days done</span></div>
+      <div class="kpi"><b>${fmtAvg(stats)}</b><span class="muted">Average score</span></div>
+      <div class="kpi"><b>${todayDay?('Day '+todayDay.n):'—'}</b><span class="muted">Today</span></div>
+    </div>
+    <div class="plan-bar" aria-hidden="true"><span style="width:${Math.round(stats.doneCount/stats.total*100)}%"></span></div>
+    <div class="toolbar" style="margin-top:12px"><button class="btn" id="planBack">Back</button></div>
+  </div>`));
+  $('#planBack').onclick=backFromAux;
+  STUDY_PLAN.phases.forEach(ph=>{
+    const days=STUDY_PLAN.days.filter(d=>d.phase===ph.key);
+    if (!days.length) return;
+    const sec=el(`<div class="card"><h3 style="margin-top:0">${esc(ph.heading)}</h3><div class="plan-list"></div></div>`);
+    const host=sec.querySelector('.plan-list');
+    days.forEach(d=>host.appendChild(planDayCard(d, today)));
+    view.appendChild(sec);
+  });
+  const target=$('.plan-day.today');
+  if (target){
+    requestAnimationFrame(()=>{ target.scrollIntoView({block:'start', behavior:'auto'}); });
+  }
 }
 function renderReports(){
   const view=beginAuxView('Reports');
@@ -18611,7 +19679,7 @@ function renderHistoryDetail(idx){
         <div class="ansline"><b>Your answer:</b> ${esc(formatUser({q,user:it.user}))}</div>
         <div class="ansline"><b>Correct answer:</b> ${esc(formatAnswer(q))}</div>
       </div>`);
-      wrap.appendChild(reportButton(q));
+      wrap.appendChild(reportButton(q, true));
       const tog=el(`<button type="button" class="btn explainer-toggle">Show explanation</button>`);
       const box=el(`<div class="hidden explainer-slot"></div>`);
       box.innerHTML=formatExplainerHtml(q, it.user, r);
@@ -18635,7 +19703,7 @@ function renderHistoryDetail(idx){
 }
 
 document.addEventListener('keydown', (e)=>{
-  if (e.key==='Escape' && $('#issueSheet')){ closeSheet(); return; }
+  if (e.key==='Escape' && ($('#issueSheet')||$('#noteSheet'))){ if($('#noteSheet')) closeNoteEditor(); else closeSheet(); return; }
   if (!state || !state.items) return;
   if (['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
   if (e.key==='ArrowRight'){ state.idx=Math.min(state.items.length-1,state.idx+1); renderExam(); }
